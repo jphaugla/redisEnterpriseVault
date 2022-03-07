@@ -1,0 +1,2 @@
+kubectl create namespace redis-connect
+kubectl config set-context --current --namespace=redis-connect

@@ -1,0 +1,8 @@
+https://cloud.google.com/architecture/deploying-highly-available-postgresql-with-gke
+kubectl create namespace postgres
+kubectl config set-context --current --namespace=postgres
+https://www.kubegres.io/doc/getting-started.html
+kubectl apply -f https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
+# need to change default config for postgres.conf to turn on replication
+kubectl edit configmap base-kubegres-config -n default
+

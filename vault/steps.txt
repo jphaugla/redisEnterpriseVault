@@ -1,0 +1,83 @@
+kubectl create namespace vault
+kubectl config set-context --current --namespace=vault
+go to plugin directions
+https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md
+# change the override values to enable dev mode
+./helminstall.sh
+# download this file
+https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/releases
+download vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
+chmod 755 vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
+# get the shasum
+shasum -a 256 ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64| awk '{print $1}'
+#  739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
+# change out the copy command so it works  :)
+kubectl cp -n vault ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 vault-0:/usr/local/libexec/vault
+# this is the better shell command into the vault
+kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh
+#  create the plugin
+vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 sha256=739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
+ export VAULT_TOKEN=s.GACBWC4UGkNZ7mJUl0ZZkPMx
+#  create main redis database config
+/ $ vault write database/config/demo-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username=demo@redislabs.com password=vubYurxK
+#  create meta redis database config
+vault write database/config/demo-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://rec.demo.svc:9443" allowed_roles="*" database=redis-meta username=demo@redislabs.com password=vubYurxK
+#  create timeseries redis database config
+vault write database/config/demo-rec-redis-timeseries plugin_name="redisenterprise-database-plugin" url="https://rec.demo.svc:9443" allowed_roles="*" database=redis-timeseries username=demo@redislabs.com password=vubYurxK
+#  create role for redis-enterprise
+vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"DB Member\"}" default_ttl=3m max_ttl=10m
+#  create role for redis-meta
+vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"DB Member\"}" default_ttl=3m max_ttl=10m
+#  create role for redis-timeseries
+vault write database/roles/redis-timeseries db_name=demo-rec-redis-timeseries creation_statements="{\"role\":\"DB Member\"}" default_ttl=3m max_ttl=10m
+#  read from main database
+vault read database/creds/redis-enterprise-database
+Key                Value
+---                -----
+lease_id           database/creds/redis-enterprise-database/JVsEvOrtZfK46dMO7GWRxjTW
+lease_duration     3m
+lease_renewable    true
+password           blZxlE10AS-zy-UBbjdh
+username           v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982
+# read from meta database
+vault read database/creds/redis-meta
+Key                Value
+---                -----
+lease_id           database/creds/redis-meta/iahGKJ9XNkisGsyLgW89Ohpt
+lease_duration     3m
+lease_renewable    true
+password           Vfo2ajqBvWAVKFyI-ojR
+username           v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445
+# read from redis-timeseries
+vault read database/creds/redis-timeseries
+Key                Value
+---                -----
+lease_id           database/creds/redis-timeseries/TqlXEpltt6PbW74iDdbOuj0T
+lease_duration     3m
+lease_renewable    true
+password           4Z08fYA6rXbTDsKGpZ-b
+username           v_root_redis-timeseries_pfmfwoa8svogg1mshglu_1646412581
+
+kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
+
+ redis-cli -p 18154
+AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
+
+vault auth enable kubernetes
+vault write auth/kubernetes/config \
+    token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+    kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
+    kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+vault policy write redis-enterprise-database - <<EOF
+path "database/creds/redis-enterprise-database" {
+  capabilities = ["read"]
+}
+EOF
+
+vault write auth/kubernetes/role/redis-enterprise-database \
+      bound_service_account_names=workload \
+      bound_service_account_namespaces=demo \
+      policies=redis-enterprise-database \
+      ttl=24h
+

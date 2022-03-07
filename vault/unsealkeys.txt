@@ -1,0 +1,132 @@
+kubectl create namespace vault
+kubectl config set-context --current --namespace=vault
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm repo update
+helm search repo vault --versions
+#  this override values prepares for a plugin directory for the redis plugin
+helm install vault hashicorp/vault --namespace vault -f override-values.yaml
+kubectl exec vault-0 -- vault status  # gets vault status
+download this file
+https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/releases
+download vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
+# copy the file
+kubectl cp -n vault ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 vault-0:/usr/local/libexec/vault
+shasum -a 256 ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64| awk '{print $1}'
+this is the key
+739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
+an interesting setup of vault in HA with web application secret
+https://learn.hashicorp.com/tutorials/vault/kubernetes-google-cloud-gke?in=vault/kubernetes
+
+# this is an alternative on the init (which I saw later) that captures the keys in json format
+kubectl exec vault-0 -- vault operator init -key-shares=1 -key-threshold=1 -format=json > cluster-keys.json
+
+vault operator init
+Unseal Key 1: WLLiqqxn8kd4V7vyJ1Ok9wPGNkcLqsKfDNCZZa5gUZPE
+Unseal Key 2: qWWt0kK7bezlDg0J0AqIr15A9chIjB7ZKStXgv/rSTF2
+Unseal Key 3: 0PXHDJyGiXyZaBdp8w0P3a5jH153ynTG9Z0+b2rM2qgJ
+Unseal Key 4: /PrCMxLEPt8J7W3QBNtDVMFNWAOVmAEoJRU0ycTrzsMG
+Unseal Key 5: YR02qAuZNWY65Ck4Dm1oG2rjMtwYbwKqN2EE9FF72ejz
+
+Initial Root Token: s.c2TqmRBqmIDN4hozhIlvirwu
+Vault initialized with 5 key shares and a key threshold of 3. Please securely
+distribute the key shares printed above. When the Vault is re-sealed,
+restarted, or stopped, you must supply at least 3 of these keys to unseal it
+before it can start servicing requests.
+
+Vault does not store the generated master key. Without at least 3 keys to
+reconstruct the master key, Vault will remain permanently sealed!
+
+It is possible to generate new unseal keys, provided you have a quorum of
+existing unseal keys shares. See "vault operator rekey" for more information.
+/ $ vault operator unseal
+Unseal Key (will be hidden): 
+Key                Value
+---                -----
+Seal Type          shamir
+Initialized        true
+Sealed             true
+Total Shares       5
+Threshold          3
+Unseal Progress    1/3
+Unseal Nonce       6c7c2617-cdf4-4f59-a554-99922e8d02dc
+Version            1.9.2
+Storage Type       file
+HA Enabled         false
+/ $ valut operator unseal
+sh: valut: not found
+/ $ vault operator unseal
+Unseal Key (will be hidden): 
+Key                Value
+---                -----
+Seal Type          shamir
+Initialized        true
+Sealed             true
+Total Shares       5
+Threshold          3
+Unseal Progress    2/3
+Unseal Nonce       6c7c2617-cdf4-4f59-a554-99922e8d02dc
+Version            1.9.2
+Storage Type       file
+HA Enabled         false
+/ $ vault operator unseal
+Unseal Key (will be hidden): 
+Key             Value
+---             -----
+Seal Type       shamir
+Initialized     true
+Sealed          false
+Total Shares    5
+Threshold       3
+Version         1.9.2
+Storage Type    file
+Cluster Name    vault-cluster-b4d0978f
+Cluster ID      8f53ea56-fda3-bb79-f62a-d917ff786df6
+HA Enabled      false
+
+shasum -a 256 cmd/vault-plugin-database-redisenterprise/main.go awk '{print $1}' 
+739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
+
+export VAULT_TOKEN=739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
+jasonhaugland@Jasons-MBP-2 vault-plugin-database-redis-enterprise % vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redisenterprise sha256=04832899a0bc9a50ad4f3425a198b45f873f13cc44ffae5e0d66e171d4297cfc
+
+kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh  
+/ $ export VAULT_TOKEN=
+/ $ vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redisenterprise sha256=04832899a0bc9a50ad4f3425a198b45f873f13cc44f
+fae5e0d66e171d4297cfc
+Error writing data to sys/plugins/catalog/database/redisenterprise-database-plugin: Error making API request.
+
+URL: PUT http://127.0.0.1:8200/v1/sys/plugins/catalog/database/redisenterprise-database-plugin
+Code: 403. Errors:
+
+* permission denied
+/ $ export VAULT_TOKEN=04832899a0bc9a50ad4f3425a198b45f873f13cc44ffae5e0d66e171d4297cfc
+/ $ vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redisenterprise sha256=04832899a0bc9a50ad4f3425a198b45f873f13cc44f
+fae5e0d66e171d4297cfc
+Error writing data to sys/plugins/catalog/database/redisenterprise-database-plugin: Error making API request.
+
+URL: PUT http://127.0.0.1:8200/v1/sys/plugins/catalog/database/redisenterprise-database-plugin
+Code: 403. Errors:
+
+* permission denied
+
+this fixed it!!!
+
+download this file
+https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/releases
+download vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
+
+
+kubectl cp -n vault ~/Downloads/vault-plugin-database-redisenterprise_linux_amd64 vault-0:/usr/local/libexec/vault
+shasum -a 256 ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64| awk '{print $1}'
+kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh  
+export VAULT_TOKEN=s.c2TqmRBqmIDN4hozhIlvirwu
+vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 sha256=739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49
+119ab62a5759
+
+vault secrets enable database
+
+get modules
+
+kubectl -n demo get RedisEnterpriseCluster -o jsonpath={..modules}
+[{"displayName":"RedisJSON","name":"ReJSON","versions":["1.0.8"]},{"displayName":"RedisBloom","name":"bf","versions":["2.2.6"]},{"displayName":"RedisGraph","name":"graph","versions":["2.4.7"]},{"displayName":"RediSearch 2","name":"search","versions":["2.0.15"]},{"displayName":"RedisTimeSeries","name":"timeseries","versions":["1.4.10"]}]%   
+

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mypostgres-conf
+  namespace: postgres
+
+data:
+
+  postgres.conf: |
+
+    # Replication configs
+    wal_level = logical
+    max_wal_senders = 1
+    max_replication_slots = 1
