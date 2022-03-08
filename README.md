@@ -4,7 +4,6 @@
 
 Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Vault
 
-
 &nbsp;
 
 ## Outline
@@ -19,15 +18,13 @@ Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Va
   - [Vault](#vault)
   - [Install Kubegres](#install-kubegres)
   - [Redis Connect](#redis-connect)
-
-
+  
 &nbsp;
 
 ## Overview
 Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces will run in separate namespaces in a GKE cluster.
 
 ## Important Links
-
 
 * [Set up vault on GKE](https://learn.hashicorp.com/tutorials/vault/kubernetes-google-cloud-gke)
 * [Redis Connect Tips](https://github.com/Redislabs-Solution-Architects/redis-connect-k8s-helpers)
@@ -202,20 +199,18 @@ kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
 ### Install Kubegres
 Based on the instructions so also read these as steps are performed for deeper explanation [Kubegres getting started](https://www.kubegres.io/doc/getting-started.html)
-Note, I disabled failover on the postgres as it is easier for restarts after changing the replication parameters
+This creates, kubegres, create configmap to enable postgres replication, add postgres database and password, and create the one node database
+The replication technique with the configmap uses this link  [Override default configs](https://www.kubegres.io/doc/override-default-configs.html)
 ```bash
 cd $POSTGRES
 kubectl apply -f https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
 kubectl create namespace postgres
 kubectl config set-context --current --namespace=postgres
+kubectl apply -f postgres-conf-override.yaml
 kubectl apply -f my-postgres-secret.yaml
 kubectl apply -f my-postgres.yaml
 ```
-* Subsequent instructions for turning on replication settings for Postgres are based on [Override default configs](https://www.kubegres.io/doc/override-default-configs.html)
-```bash
-kubectl apply -f postgres-conf-override.yaml
-kubectl rollout restart statefulset mypostgres-1 mypostgres-2 mypostgres-3
-```
+
 #### Integrate Kubegres into vault
 * get the IP for kubegres using describe and then substitute the IP address for address below
 ```bash
@@ -260,7 +255,6 @@ vault write auth/kubernetes/role/redis-connect \
     bound_service_account_namespaces=redis-connect \
     policies=redis-connect-policy \
     ttl=24h
-
 ```
 * create redis-connect namespace
 ```bash
