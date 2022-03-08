@@ -210,13 +210,28 @@ kubectl apply -f postgres-conf-override.yaml
 kubectl apply -f my-postgres-secret.yaml
 kubectl apply -f my-postgres.yaml
 ```
-
-#### Integrate Kubegres into vault
-* get the IP for kubegres using describe and then substitute the IP address for address below
+* create database and tables needed for redis-connect
+  * find the pod name for postgres 
+  * copy database and table creation to pod 
 ```bash
-kubectl describe service/mypostgres
+cd $SAMPLES
+kubectl get pods
+kubectl cp ../../../postgres_cdc.sql mypostgres-1-0:/
+kubectl exec --stdin --tty  mypostgres-1-0 -- /bin/sh
+psql -Upostgres
+create database "RedisConnect";
+\c "RedisConnect"
+\i postgres_cdc.sql
 ```
-* put the IP address from the endpoint into the connection below
+
+### Redis Connect
+* create service account and namespace
+``` bash
+cd $REDIS_CONNECT
+kubectl create sa redis-connect* create redis-connect namespace
+kubectl create namespace redis-connect
+kubectl config set-context --current --namespace=redis-connect
+```
 * go to vault terminal
 ```bash
 vault write database/config/kube-postgres \
@@ -224,7 +239,7 @@ vault write database/config/kube-postgres \
     allowed_roles="redis-connect" \
     username="postgres" \
     password="jasonrocks" \
-    connection_url="postgresql://{{username}}:{{password}}@10.72.3.19:5432/RedisConnect?sslmode=disable"
+    connection_url="postgresql://{{username}}:{{password}}@mypostgres.postgres.svc:5432/redisconnect?sslmode=disable"
 vault write database/roles/redis-connect \
     db_name=kube-postgres \
     creation_statements="CREATE ROLE \"{{name}}\" WITH REPLICATION LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
@@ -232,11 +247,6 @@ vault write database/roles/redis-connect \
          ALTER USER \"{{name}}\" WITH SUPERUSER;" \
     default_ttl="5m" \
     max_ttl="5m"
-```
-### Redis Connect
-* create service account
-``` bash
-kubectl create sa redis-connect
 ```
 * authorize all the databases in kubernetes with the vault connection
 ```bash
@@ -256,12 +266,7 @@ vault write auth/kubernetes/role/redis-connect \
     policies=redis-connect-policy \
     ttl=24h
 ```
-* create redis-connect namespace
-```bash
-cd $REDIS_CONNECT
-kubectl create namespace redis-connect
-kubectl config set-context --current --namespace=redis-connect
-```
+
 
 #### Edit redis-connect files
 * Edit the env.yml file for redis and postgres connections.  The urls are edited for all the connections (redis and postgres).  The postgres connection is a replacement.   File samples below:
@@ -297,12 +302,14 @@ connections:
     credentials.file.path: "/vault/secrets/postgresql"
 ``` 
 ```bash
+cp -p ../../logback.xml .
 kubectl create configmap redis-connect-postgres-config \
   --from-file=JobConfig.yml=JobConfig.yml \
   --from-file=JobManager.yml=JobManager.yml \
   --from-file=env.yml=env.yml \
   --from-file=Setup.yml=Setup.yml \
-  --from-file=mapper1.yml=mappers/mapper1.yml
+  --from-file=mapper1.yml=mappers/mapper1.yml \
+  --from-file=logback.xml=logback.xml 
 ```
 ```bash
 cd $RC_VAULT
