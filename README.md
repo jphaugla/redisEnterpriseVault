@@ -468,7 +468,7 @@ cd logs
 # investigate the log files 
 vi *
 # login to cli
-bin/redisconnect.sh cli
+cd ../bin
+./redisconnect.sh cli
 > validate connection -t JDBCConnectionProvider -i RDBConnection
-
 ```
