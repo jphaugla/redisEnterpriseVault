@@ -33,6 +33,7 @@ Set up full set of tools to do redis connect between postgresql and redis enterp
 * [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
 * [Redis Connect](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo)
 * [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+* [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
 
 ## Technical Overview
 
@@ -96,6 +97,39 @@ kubectl apply -f redis-meta.yml
 ./getDatabasePw.sh
 ./getClusterUnPw.sh
 ```
+#### Add redisinsights 
+These instructions are based on [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
+&nbsp;
+The above instructions have two options for installing redisinights, this uses the second option to install[ without a service](https://docs.redis.com/latest/ri/installing/install-k8s/#create-the-redisinsight-deployment-without-a-service) (avoids creating a load balancer)
+* copy the yml file above into a file named *redisinsight.yml*
+* create redisinsights
+```bash
+kubectl apply -f redisinsight.yaml
+kubectl port-forward deployment/redisinsight 8001
+```
+* from chrome or firefox open the browser using http://localhost:8001
+* Click "I already have a database"
+* Click "Connect to Redis Database"
+* Create Connection to target redis database with following parameter entries
+
+| Key      | Value                                     |
+|----------|-------------------------------------------|
+| host     | redis-enterprise-database.demo            |
+| port     | 18154 (get from ./getDatabasepw.sh above) |
+| name     | TargetDB                                  |
+| Username | (leave blank)                             |
+| Password | DrCh7J31 (from ./getDatabasepw.sh above) |
+* click ok
+*repeat steps above for metadata database using following parameters
+*
+| Key      | Value                                     |
+|----------|-------------------------------------------|
+| host     | redis-meta.demo                           |
+| port     | 15871 (get from ./getDatabasepw.sh above) |
+| name     | metaDB                                    |
+| Username | (leave blank)                             |
+| Password | FW2mFXEH (from ./getDatabasepw.sh above)  |
+
 ### Vault
 
 #### Install helm and vault on GKE
@@ -196,7 +230,6 @@ kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
 kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 ```
 * don't log out of vault, keep vault connection in a separate terminal and use the vault terminal as directed
-
 ### Install Kubegres
 Based on the instructions so also read these as steps are performed for deeper explanation [Kubegres getting started](https://www.kubegres.io/doc/getting-started.html)
 This creates, kubegres, create configmap to enable postgres replication, add postgres database and password, and create the one node database
