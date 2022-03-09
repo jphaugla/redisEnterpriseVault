@@ -452,4 +452,23 @@ kubectl apply -f redis-connect-postgres-stage.yaml
 ```bash
 kubectl apply -f redis-connect-postgres-start.yaml
 ```
+* Redis-connect job [documentation link](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo#start-redis-connect-postgres-connector)
+* look for resulting rows in redis enterprise using redisinsight (see directions above)
+* There are multiple methods to debug the running job.  Here are a few:
+  * Find the pod name(s) for redis connect
+  * get the logs for init and main container
+  * log in to the pod and look at log files 
+  * test the postgresql connection
+```bash
+kubectl get pods
+kubectl logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent-init
+kubectl logs redis-connect-postgres-595d6fb5f4-54c6v -c redis-connect-postgres
+kubectl  exec --stdin=true --tty=true pod/redis-connect-postgres-595d6fb5f4-54c6v -- /bin/sh
+cd logs
+# investigate the log files 
+vi *
+# login to cli
+bin/redisconnect.sh cli
+> validate connection -t JDBCConnectionProvider -i RDBConnection
 
+```
