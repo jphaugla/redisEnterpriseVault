@@ -23,6 +23,7 @@ Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Va
 
 ## Overview
 Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces will run in separate namespaces in a GKE cluster.
+![Solution Diagram](redis-connect-k8s.png)
 
 ## Important Links
 
