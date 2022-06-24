@@ -295,7 +295,7 @@ vault write database/config/kube-postgres \
     allowed_roles="redis-connect" \
     username="postgres" \
     password="jasonrocks" \
-    connection_url="postgresql://{{username}}:{{password}}@mypostgres.postgres.svc:5432/redisconnect?sslmode=disable"
+    connection_url="postgresql://{{username}}:{{password}}@mypostgres.postgres.svc:5432/RedisConnect?sslmode=disable"
 vault write database/roles/redis-connect \
     db_name=kube-postgres \
     creation_statements="CREATE ROLE \"{{name}}\" WITH REPLICATION LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
