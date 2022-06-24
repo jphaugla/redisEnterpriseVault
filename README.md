@@ -15,6 +15,7 @@ Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Va
   - [Prepare repository working directories](#prepare-repository-working-directories)
   - [Create GKE cluster](#create-gke-cluster)
   - [Install Redis Enterprise k8s](#install-redis-enterprise-k8s)
+  - [Create Redis Enterprise Databases](#create-redis-enterprise-databases)
   - [Vault](#vault)
   - [Install Kubegres](#install-kubegres)
   - [Redis Connect](#redis-connect)
@@ -22,7 +23,8 @@ Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Va
 &nbsp;
 
 ## Overview
-Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces will run in separate namespaces in a GKE cluster.
+Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces 
+will run in separate namespaces in a GKE cluster.
 ![Solution Diagram](redis-connect-k8s.png)
 
 ## Important Links
@@ -75,21 +77,31 @@ source setEnvironmant.sh
 ### Create GKE cluster 
 
 * Tips on installing GKE
-  * Instead of using the provided script to create the GKE cluster, make sure compute nodes are decent size *e2-standard-8*.  Easier to use GCP console to get the desired node size.
+  * Instead of using the provided script to create the GKE cluster, make sure compute nodes are decent size *e2-standard-8*.  
+  * Easier to use GCP console to get the desired node size.
   * Start with 3 nodes in the default node pool-can always increase as needed.
-* Specific steps once GKE cluster is installed and kubectl is set up
-    * Don't use the default namespace for the vault k8s pieces.  Use the vault namespace.  To do this.
+  * Once the GKE cluster is created, connect to the cluster.  To do this:
+    * Click on newly created cluster
+![Select GKE Cluster](/Users/jasonhaugland/gits/redisEnterpriseVault/images/SelectGKEcluster.png)
+    * Click to connect to the cluster
+![Connect to Cluster](/Users/jasonhaugland/gits/redisEnterpriseVault/images/ConnectToCluster.png)
+    * Follow the command-line access instructions to prepare for the subsequent steps
 
 ### Install Redis Enterprise k8s
-* Get to K8 namespace directory
+* Get to redis enterprise k8s docs directory
+```bash
+cd $GIT_RE_K8S
+```
+* Follow [Redis Enterprise k8s installation instructions](https://github.com/RedisLabs/redis-enterprise-k8s-docs#installation) all the way 
+* through to step 4.  Use the demo namespace as instructed.  So after Step 4, done with this section
+* Skip Step 5, the admission controller steps are not needed and neither are the webhook instructions
+* Don't do Step 6 as the databases for this github are in the k8s subdirectory of this github
+
+### Create redis enterprise databases
+* Create two redis enterprise databases.  The first database is the Target database for redis connect and the second stores meta-data for redis-connect
+  * If, the database doesn't create, it may be the version of the timeseries module as it must fit with the deployed version
 ```bash
 cd $DEMO
-```
-* Follow [Redis Enterprise k8s installation instructions](https://github.com/RedisLabs/redis-enterprise-k8s-docs#installation) all the way through to step 4.  Use the demo namespace as instructed.
-* For Step 5, the admission controller steps are needed but the webhook instructions are not necessary
-* Don't do Step 6 as the databases for this github are in the k8s subdirectory of this github
-* Create two redis enterprise databases.  The first database is the Target database for redis connect and the second stores meta-data for redis-connect
-```bash
 kubectl apply -f redis-enterprise-database.yml
 kubectl apply -f redis-meta.yml
 ```
@@ -101,11 +113,11 @@ kubectl apply -f redis-meta.yml
 #### Add redisinsights 
 These instructions are based on [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
 &nbsp;
-The above instructions have two options for installing redisinights, this uses the second option to install[ without a service](https://docs.redis.com/latest/ri/installing/install-k8s/#create-the-redisinsight-deployment-without-a-service) (avoids creating a load balancer)
-* copy the yml file above into a file named *redisinsight.yml*
-* create redisinsights
+The above instructions have two options for installing redisinights, this uses the second option to install
+[ without a service](https://docs.redis.com/latest/ri/installing/install-k8s/#create-the-redisinsight-deployment-without-a-service) (avoids creating a load balancer)
+* The yaml file apply below, creates redisinsights
 ```bash
-kubectl apply -f redisinsight.yaml
+kubectl apply -f redisinsight.yml
 kubectl port-forward deployment/redisinsight 8001
 ```
 * from chrome or firefox open the browser using http://localhost:8001
@@ -164,13 +176,14 @@ export CLUSTER_ROOT_TOKEN=$(cat cluster-keys.json | jq -r ".root_token")
 kubectl exec vault-0 -- vault login $CLUSTER_ROOT_TOKEN
 ```
 #### Download the plugin file
+Make sure you grab the correct file-many similarily named files
 * download vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
 https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/releases
 * need to change the permissions, copy the file to the vault container, and pull the shasum for used later
 ```bash
- chmod 755 vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
- kubectl cp -n vault ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 vault-0:/usr/local/libexec/vault
- shasum -a 256 ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64| awk '{print $1}'
+mv ~/Downloads/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 $VAULT
+kubectl cp -n vault $VAULT/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 vault-0:/usr/local/libexec/vault
+shasum -a 256 $VAULT/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64| awk '{print $1}'
 ```
 * get the cluster and database password information for use while logged into vault
 ```bash
@@ -178,6 +191,7 @@ $DEMO/getDatabasePw.sh
 $DEMO/getClusterUnPw.sh
 ```
 ####  log to vault container and enable vault plugin
+Use the shasum value pulled from above and not the current value set equal to sha256
 ```bash
 kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh
 vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 sha256=739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
@@ -185,6 +199,8 @@ vault write sys/plugins/catalog/database/redisenterprise-database-plugin command
 #### Create database configurations in vault
 Using the information from the getClusterUnPw.sh script from above and using the username and password valued for redis enterprise cluster authentication.   For additional explanations peruse [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
 ```bash
+chmod 755 /usr/local/libexec/vault/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
+vault secrets enable database
 vault write database/config/demo-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username=demo@redislabs.com password=vubYurxK
 vault write database/config/demo-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://rec.demo.svc:9443" allowed_roles="*" database=redis-meta username=demo@redislabs.com password=vubYurxK
 ```
@@ -192,10 +208,6 @@ vault write database/config/demo-rec-redis-meta plugin_name="redisenterprise-dat
 ```bash
 vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"DB Member\"}" default_ttl=3m max_ttl=10m
 vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"DB Member\"}" default_ttl=3m max_ttl=10m
-```
-#### test the database connections
-Using the information from getDatabasePw.sh aavove.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
-```bash
 vault read database/creds/redis-enterprise-database
       Key                Value
       ---                -----
@@ -204,7 +216,17 @@ vault read database/creds/redis-enterprise-database
       lease_renewable    true
       password           blZxlE10AS-zy-UBbjdh
       username           v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982
+```
+#### test the database connections
+Using the information from getDatabasePw.sh above.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
+Grab another new terminal window to runt the port forward command.  (note, need the actual port from getDatabasePw.sh)
+NOTE:  the lower redis-cli command is using the username and password from the output of the read database command.  Hurry, only 3 minutes 
+before username and password expire
+```bash
 kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
+```
+Open yet another new terminal window 
+```bash
 redis-cli -p 18154
 >AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
 vault read database/creds/redis-meta
@@ -220,10 +242,9 @@ redis-cli -p 18632
 >AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
 ```
 #### Authorize kubernetes
-* using vault terminal connection...
+* using vault terminal connection...   (if doensn't work, repeat some steps)
 ```bash
 vault auth enable kubernetes
-vault secrets enable database
 vault secrets enable kubernetes
 vault write auth/kubernetes/config \
 token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
@@ -260,7 +281,7 @@ create database "RedisConnect";
 
 ### Redis Connect
 * create service account and namespace
-``` bash
+```bash
 cd $REDIS_CONNECT
 kubectl create sa redis-connect* create redis-connect namespace
 kubectl create namespace redis-connect

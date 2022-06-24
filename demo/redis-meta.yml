@@ -11,4 +11,4 @@ spec:
     acl: "Not Dangerous"
   modulesList: 
   - name: timeseries
-    version: 1.4.10
+    version: 1.6.9
