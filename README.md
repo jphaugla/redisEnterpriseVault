@@ -268,12 +268,13 @@ kubectl apply -f my-postgres.yaml
 * create database and tables needed for redis-connect
   * find the pod name for postgres 
   * copy database and table creation to pod 
+  * use the password in the my-postgres-secret.yaml file when prompted with psql
 ```bash
 cd $SAMPLES
 kubectl get pods
-kubectl cp ../../../postgres_cdc.sql mypostgres-1-0:/
+kubectl postgres_cdc.sql mypostgres-1-0:/
 kubectl exec --stdin --tty  mypostgres-1-0 -- /bin/sh
-psql -Upostgres
+psql -Upostgres -W
 create database "RedisConnect";
 \c "RedisConnect"
 \i postgres_cdc.sql
