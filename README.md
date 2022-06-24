@@ -82,9 +82,9 @@ source setEnvironmant.sh
   * Start with 3 nodes in the default node pool-can always increase as needed.
   * Once the GKE cluster is created, connect to the cluster.  To do this:
     * Click on newly created cluster
-![Select GKE Cluster](/Users/jasonhaugland/gits/redisEnterpriseVault/images/SelectGKEcluster.png)
+![Select GKE Cluster](images/SelectGKEcluster.png)
     * Click to connect to the cluster
-![Connect to Cluster](/Users/jasonhaugland/gits/redisEnterpriseVault/images/ConnectToCluster.png)
+![Connect to Cluster](images/ConnectToCluster.png)
     * Follow the command-line access instructions to prepare for the subsequent steps
 
 ### Install Redis Enterprise k8s
