@@ -206,8 +206,8 @@ vault write database/config/demo-rec-redis-meta plugin_name="redisenterprise-dat
 ```
 #### Create database roles
 ```bash
-vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"DB Member\"}" default_ttl=3m max_ttl=10m
-vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"DB Member\"}" default_ttl=3m max_ttl=10m
+vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"DB Member\"}" default_ttl=90m max_ttl=100m
+vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"DB Member\"}" default_ttl=90m max_ttl=100m
 vault read database/creds/redis-enterprise-database
       Key                Value
       ---                -----
@@ -301,8 +301,8 @@ vault write database/roles/redis-connect \
     creation_statements="CREATE ROLE \"{{name}}\" WITH REPLICATION LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
          GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
          ALTER USER \"{{name}}\" WITH SUPERUSER;" \
-    default_ttl="5m" \
-    max_ttl="5m"
+    default_ttl="60m" \
+    max_ttl="60m"
 ```
 * authorize all the databases in kubernetes with the vault connection
 ```bash
@@ -325,155 +325,20 @@ vault write auth/kubernetes/role/redis-connect \
 
 
 #### Edit redis-connect files
-* Edit the env.yml file for redis and postgres connections.  The urls are edited for all the connections (redis and postgres).  The postgres connection is a replacement.   File samples below:
+* Can rerun the script to pull the password for the database
+* Edit the jobmanager.properties file for the correct connection parameters in redis.connection.url
+* Edit redisconnect_credentials_jobmanager.properties for the correct metadata database password
+* create configmap with jobmanages.properties, credentials and logback
+  * this configmap is used in the redis-connect-start.yaml to mount these files appropriately to hold the necessary configuration information 
+* start the server
 ```bash
-cd $SAMPLES
-```
-* edit JobConfig.yml to set ```metricsEnabled: true```
-* edit env.yml as below
-```text
-#env.yml
-connections:
-  - id: jobManagerConnection #Redis Connect Job Metadata connection
-    type: Redis
-    url: redis://redis-meta.demo.svc:15871 #this is based on lettuce uri syntax
-    jobmanager.username: ${REDISCONNECT_JOBMANAGER_USERNAME} #this can be overridden by an env variable or a property file
-    jobmanager.password: ${REDISCONNECT_JOBMANAGER_PASSWORD} #this can be overridden by an env variable or a property file
-    #credentials.file.path: <path to <redisconnect_credentials_jobmanager_<job_name> e.g. /var/secrets/jobmanager> when username and password are not provided here
-  - id: targetConnection #target Redis connection
-    type: Redis
-    url: redis://redis-enterprise-database.demo.svc:18154 #this is based on lettuce uri syntax
-    target.username: ${REDISCONNECT_TARGET_USERNAME} #this can be overridden by an env variable or a property file
-    target.password: ${REDISCONNECT_TARGET_PASSWORD} #this can be overridden by an env variable or a property file
-    #credentials.file.path: <path to <redisconnect_credentials_redis_<job_name> e.g. /var/secrets/redis> when username and password are not provided here
-  - id: RDBConnection
-    type: RDB
-    name: RedisConnect #database pool name
-    database: RedisConnect #database
-    url: "jdbc:postgresql://mypostgres.postgres.svc:5432/RedisConnect" #this is jdbc client driver specific, and it can contain any supported parameters
-    host: mypostgres.postgres.svc
-    port: 5432
-    # source.username: ${REDISCONNECT_SOURCE_USERNAME} #this can be overridden by an env variable or a property file
-    # source.password: ${REDISCONNECT_SOURCE_PASSWORD} #this can be overridden by an env variable or a property file
-    credentials.file.path: "/vault/secrets/postgresql"
-``` 
-```bash
-cp -p ../../logback.xml .
-kubectl create configmap redis-connect-postgres-config \
-  --from-file=JobConfig.yml=JobConfig.yml \
-  --from-file=JobManager.yml=JobManager.yml \
-  --from-file=env.yml=env.yml \
-  --from-file=Setup.yml=Setup.yml \
-  --from-file=mapper1.yml=mappers/mapper1.yml \
-  --from-file=logback.xml=logback.xml 
-```
-```bash
-cd $RC_VAULT
-```
-* edit redis-connect-postgres-stage.yaml replacing existing top of the file with this changed content
-```text
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: redis-connect-postgres-stage # deployment name
-  labels:
-    app: redis-connect-postgres-stage # deployment label
-spec:
-  backoffLimit: 10 # try this many times before declaring failure
-  template: # pod template
-    metadata:
-      labels:
-        app: redis-connect-postgres-stage
-      annotations:
-        vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/agent-pre-populate-only: "true"
-        vault.hashicorp.com/role: "redis-connect"
-        vault.hashicorp.com/secret-volume-path: "/vault/secrets/postgresql"
-        vault.hashicorp.com/agent-inject-file-redis-connect: "redisconnect_credentials_postgresql_postgres-job"
-        vault.hashicorp.com/agent-inject-secret-redis-connect: 'database/creds/redis-connect'
-        vault.hashicorp.com/agent-inject-template-redis-connect: |
-          {{ with secret "database/creds/redis-connect" -}}
-          source.username={{ .Data.username }}
-          source.password={{ .Data.password }}
-          {{- end }}
-```
-* further down, on redis-connect-postgres-stage.yaml, make this edit to add the four redis connect environment variables:  REDISCONNECT_JOBMANAGER_USERNAME, REDISCONNECT_JOBMANAGER_PASSWORD, REDISCONNECT_TARGET_USERNAME, REDISCONNECT_TARGET_PASSWORD
-  * NOTE:  originally code was set up to have an ACL with username and password but it will accept a null username which works best in this situation
-```text
-        env:
-          - name: REDISCONNECT_LOGBACK_CONFIG
-            value: "/opt/redislabs/redis-connect-postgres/config/logback.xml"
-          - name: REDISCONNECT_CONFIG
-            value: "/opt/redislabs/redis-connect-postgres/config/fromconfigmap"
-          - name: REDISCONNECT_REST_API_ENABLED
-            value: "false"
-          - name: REDISCONNECT_REST_API_PORT
-            value: "8282"
-          - name: REDISCONNECT_JAVA_OPTIONS
-            value: "-Xms256m -Xmx1g"
-          - name: REDISCONNECT_JOBMANAGER_USERNAME
-            value: ""
-          - name: REDISCONNECT_JOBMANAGER_PASSWORD
-            value: "FW2mFXEH"
-          - name: REDISCONNECT_TARGET_USERNAME
-            value: ""
-          - name: REDISCONNECT_TARGET_PASSWORD
-            value: "DrCh7J31"
-```
-* In redis-connect-postgres-start.yaml, replace the top section with this content
-```text
-spec:
-  replicas: 2 # replicas for HA
-  selector:
-    matchLabels:
-      app: redis-connect-postgres # which pods is the deployment managing, as defined by the pod template
-  template: # pod template
-    metadata:
-      labels:
-        app: redis-connect-postgres
-      annotations:
-        vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/role: "redis-connect"
-        vault.hashicorp.com/secret-volume-path: "/vault/secrets/postgresql"
-        vault.hashicorp.com/agent-inject-file-redis-connect: "redisconnect_credentials_postgresql_postgres-job"
-        vault.hashicorp.com/agent-inject-secret-redis-connect: 'database/creds/redis-connect'
-        vault.hashicorp.com/agent-inject-template-redis-connect: |
-          {{ with secret "database/creds/redis-connect" -}}
-          source.username={{ .Data.username }}
-          source.password={{ .Data.password }}
-          {{- end }}
-```
-* further down, on redis-connect-postgres-start.yaml, make this edit to add the four redis connect environment variables:  REDISCONNECT_JOBMANAGER_USERNAME, REDISCONNECT_JOBMANAGER_PASSWORD, REDISCONNECT_TARGET_USERNAME, REDISCONNECT_TARGET_PASSWORD
-  * NOTE:  originally code was set up to have an ACL with username and password but it will accept a null username which works best in this situation
-```text
-        env:
-          - name: REDISCONNECT_LOGBACK_CONFIG
-            value: "/opt/redislabs/redis-connect-postgres/config/logback.xml"
-            # value: "/opt/redislabs/redis-connect-postgres/config/fromconfigmap/logback.xml"
-          - name: REDISCONNECT_CONFIG
-            value: "/opt/redislabs/redis-connect-postgres/config/fromconfigmap"
-          - name: REDISCONNECT_REST_API_ENABLED
-            value: "false"
-          - name: REDISCONNECT_REST_API_PORT
-            value: "8282"
-          - name: REDISCONNECT_JAVA_OPTIONS
-            value: "-Xms256m -Xmx1g -Dcredentials.rotation.eventlistener.enabled=true"
-          - name: REDISCONNECT_JOBMANAGER_USERNAME
-            value: ""
-          - name: REDISCONNECT_JOBMANAGER_PASSWORD
-            value: "FW2mFXEH"
-          - name: REDISCONNECT_TARGET_USERNAME
-            value: ""
-          - name: REDISCONNECT_TARGET_PASSWORD
-            value: "DrCh7J31"
-```
-* Stage the redis-connect job
-```bash
-kubectl apply -f redis-connect-postgres-stage.yaml
-```
-* Start the redis-connect job
-```bash
-kubectl apply -f redis-connect-postgres-start.yaml
+$DEMO/getDatabasePw.sh
+vi jobmanager.properties
+kubectl create configmap redis-connect-config \
+  --from-file=jobmanager.properties=jobmanager.properties \
+  --from-file=redisconnect_credentials_jobmanager.properties=redisconnect_credentials_jobmanager.properties \
+  --from-file=logback.xml=logback.xml
+kubectl apply -f redis-connect-start.yaml
 ```
 * Redis-connect job [documentation link](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo#start-redis-connect-postgres-connector)
 * look for resulting rows in redis enterprise using redisinsight (see directions above)
@@ -482,6 +347,7 @@ kubectl apply -f redis-connect-postgres-start.yaml
   * get the logs for init and main container
   * log in to the pod and look at log files 
   * test the postgresql connection
+  * there is a debug line in redis-connect-start.yaml that keeps the pod running even if their are connection errors-this is great for debug
 ```bash
 kubectl get pods
 kubectl logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent-init

@@ -14,9 +14,10 @@ export POSTGRES=$GIT_ENTERPRISE_REDIS_VAULT/postgres
 export REDIS_CONNECT=$GIT_ENTERPRISE_REDIS_VAULT/redis-connect
 # other important repositories
 export GIT_REDIS_CONNECT=$GITREPO_HOME/redis-connect-dist
+export GIT_REDIS_CONNECT_PG=$GIT_REDIS_CONNECT/examples/postgres
 export GIT_RE_K8S=$GITREPO_HOME/redis-enterprise-k8s-docs
 export GIT_VAULT_PLUGIN=$GITREPO_HOME/vault-plugin-database-redis-enterprise
 # redis-connect samples
-export SAMPLES=$GITREPO_HOME/redis-connect-dist/connectors/postgres/demo/config/samples/postgres/
+export SAMPLES=$GIT_REDIS_CONNECT_PG/demo/
 # redis-connect vault
-export RC_VAULT=$GITREPO_HOME/redis-connect-dist/connectors/postgres/k8s-docs/vault
+export RC_VAULT=$GIT_REDIS_CONNECT_PG/k8s-docs/vault
