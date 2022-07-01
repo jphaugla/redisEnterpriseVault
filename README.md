@@ -284,7 +284,7 @@ create database "RedisConnect";
 * create service account and namespace
 ```bash
 cd $REDIS_CONNECT
-kubectl create sa redis-connect* create redis-connect namespace
+kubectl create sa redis-connect
 kubectl create namespace redis-connect
 kubectl config set-context --current --namespace=redis-connect
 ```
