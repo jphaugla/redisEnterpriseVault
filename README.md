@@ -18,7 +18,7 @@ Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Va
   - [Create Redis Enterprise Databases](#create-redis-enterprise-databases)
   - [Vault](#vault)
   - [Install Kubegres](#install-kubegres)
-  - [Redis Connect](#redis-connect)
+  - [Redis Connect](#redis-connect-configuration)
   
 &nbsp;
 
@@ -283,7 +283,7 @@ create database "RedisConnect";
 \i postgres_cdc.sql
 ```
 
-### Redis Connect
+### Redis Connect Configuration
 * create service account and namespace
 ```bash
 cd $REDIS_CONNECT
