@@ -34,7 +34,7 @@ will run in separate namespaces in a GKE cluster.
 * [Kubegres is a kubernetes operator for postgresql](https://www.kubegres.io/)
 * [Redis Enterprise k8s](https://github.com/RedisLabs/redis-enterprise-k8s-docs)
 * [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
-* [Redis Connect](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo)
+* [Redis Connect Postgres Sampl](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo)
 * [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 * [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
 
@@ -44,7 +44,7 @@ will run in separate namespaces in a GKE cluster.
 * Install Redis Enterpise on k8s using "Redis Enterprise k8s" link
 * Setup Vault and "Hashicorp Vault plugin on Redis Enterprise k8s"
 * Set up Postgresql using Kubegres
-* Work through "Redis Connect"
+* Work through Redis Connect
 
 &nbsp;
 
@@ -208,6 +208,19 @@ vault write database/config/demo-rec-redis-meta plugin_name="redisenterprise-dat
 ```bash
 vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"DB Member\"}" default_ttl=90m max_ttl=100m
 vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"DB Member\"}" default_ttl=90m max_ttl=100m
+```
+#### test the database connections
+Using the information from getDatabasePw.sh above.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
+Grab another new terminal window to runt the port forward command.  (note, need the actual port from getDatabasePw.sh)
+NOTE:  the lower redis-cli command is using the username and password from the output of the read database command.  
+```bash
+kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
+kubectl port-forward -n demo service/redis-meta 16254:16254
+```
+Open a new terminal window  and test each database  
+```bash
+redis-cli -p 18154
+>AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
 vault read database/creds/redis-enterprise-database
       Key                Value
       ---                -----
@@ -217,18 +230,10 @@ vault read database/creds/redis-enterprise-database
       password           blZxlE10AS-zy-UBbjdh
       username           v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982
 ```
-#### test the database connections
-Using the information from getDatabasePw.sh above.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
-Grab another new terminal window to runt the port forward command.  (note, need the actual port from getDatabasePw.sh)
-NOTE:  the lower redis-cli command is using the username and password from the output of the read database command.  Hurry, only 3 minutes 
-before username and password expire
+
 ```bash
-kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
-```
-Open yet another new terminal window 
-```bash
-redis-cli -p 18154
->AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
+redis-cli -p 16254
+>AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
 vault read database/creds/redis-meta
       Key                Value
       ---                -----
@@ -237,12 +242,10 @@ vault read database/creds/redis-meta
       lease_renewable    true
       password           Vfo2ajqBvWAVKFyI-ojR
       username           v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445
-      kubectl port-forward -n demo service/redis-meta 18632:18632
-redis-cli -p 18632
->AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
 ```
+
 #### Authorize kubernetes
-* using vault terminal connection...   (if doensn't work, repeat some steps)
+* using vault terminal connection...   
 ```bash
 vault auth enable kubernetes
 vault secrets enable kubernetes
@@ -306,8 +309,13 @@ vault write database/roles/redis-connect \
 ```
 * authorize all the databases in kubernetes with the vault connection
 ```bash
-vault policy write redis-enterprise-database - <<EOF
+vault policy write redis-enterprise-db-policy - <<EOF
  path "database/creds/redis-enterprise-database" {
+   capabilities = ["read"]
+ }
+EOF
+vault policy write redis-meta-policy - <<EOF
+ path "database/creds/redis-meta" {
    capabilities = ["read"]
  }
 EOF
@@ -320,6 +328,16 @@ vault write auth/kubernetes/role/redis-connect \
     bound_service_account_names=redis-connect \
     bound_service_account_namespaces=redis-connect \
     policies=redis-connect-policy \
+    ttl=24h
+vault write auth/kubernetes/role/redis-enterprise-role \
+    bound_service_account_names=redis-connect \
+    bound_service_account_namespaces=redis-connect \
+    policies=redis-enterprise-db-policy \
+    ttl=24h
+vault write auth/kubernetes/role/redis-meta-role \
+    bound_service_account_names=redis-connect \
+    bound_service_account_namespaces=redis-connect \
+    policies=redis-meta-policy \
     ttl=24h
 ```
 
@@ -337,6 +355,7 @@ vi jobmanager.properties
 kubectl create configmap redis-connect-config \
   --from-file=jobmanager.properties=jobmanager.properties \
   --from-file=redisconnect_credentials_jobmanager.properties=redisconnect_credentials_jobmanager.properties \
+  --from-file=redisconnect_credentials_redis_postgres-job.properties=redisconnect_credentials_redis_postgres-job.properties \
   --from-file=logback.xml=logback.xml
 kubectl apply -f redis-connect-start.yaml
 ```
