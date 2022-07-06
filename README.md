@@ -16,6 +16,7 @@ Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Va
   - [Create GKE cluster](#create-gke-cluster)
   - [Install Redis Enterprise k8s](#install-redis-enterprise-k8s)
   - [Create Redis Enterprise Databases](#create-redis-enterprise-databases)
+  - [Add Redisinsights](#add-redisinsights)
   - [Vault](#vault)
   - [Install Kubegres](#install-kubegres)
   - [Redis Connect](#redis-connect-configuration)
@@ -110,7 +111,7 @@ kubectl apply -f redis-meta.yml
 ./getDatabasePw.sh
 ./getClusterUnPw.sh
 ```
-#### Add redisinsights 
+#### Add Redisinsights 
 These instructions are based on [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
 &nbsp;
 The above instructions have two options for installing redisinights, this uses the second option to install
@@ -356,9 +357,15 @@ kubectl create configmap redis-connect-config \
   --from-file=jobmanager.properties=jobmanager.properties \
   --from-file=redisconnect_credentials_jobmanager.properties=redisconnect_credentials_jobmanager.properties \
   --from-file=redisconnect_credentials_redis_postgres-job.properties=redisconnect_credentials_redis_postgres-job.properties \
+  --from-file=redisconnect_credentials_postgresql_postgres-job.properties=redisconnect_credentials_postgresql_postgres-job.properties \
   --from-file=logback.xml=logback.xml
 kubectl apply -f redis-connect-start.yaml
 ```
+In another terminal, need to port-forward the rest API interface to set up the actual job
+```bash
+kubectl port-forward service/redis-connect-api-service 8282:8282
+```
+
 * Redis-connect job [documentation link](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo#start-redis-connect-postgres-connector)
 * look for resulting rows in redis enterprise using redisinsight (see directions above)
 * There are multiple methods to debug the running job.  Here are a few:

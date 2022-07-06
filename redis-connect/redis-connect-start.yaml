@@ -18,7 +18,7 @@ spec:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "redis-connect"
         vault.hashicorp.com/secret-volume-path: "/vault/secrets"
-        vault.hashicorp.com/agent-inject-file-redis-connect: "redisconnect_credentials_postgres-job"
+        vault.hashicorp.com/agent-inject-file-redis-connect: "redisconnect_credentials_postgresql_postgres-job"
         vault.hashicorp.com/agent-inject-secret-redis-connect: 'database/creds/redis-connect'
         vault.hashicorp.com/agent-inject-template-redis-connect: |
           {{ with secret "database/creds/redis-connect" -}}
@@ -74,6 +74,10 @@ spec:
           items:
           - key: redisconnect_credentials_jobmanager.properties
             path: redisconnect_credentials_jobmanager.properties
+          - key: redisconnect_credentials_redis_postgres-job.properties
+            path: redisconnect_credentials_redis_postgres-job.properties
+          - key: redisconnect_credentials_postgresql_postgres-job.properties
+            path: redisconnect_credentials_postgresql_postgres-job.properties
 # #### uncomment the following six lines if you have custom
 #  transformation implementation and replace the jar with
 #  your own.

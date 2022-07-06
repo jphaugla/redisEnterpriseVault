@@ -9,7 +9,14 @@ data:
   postgres.conf: |
 
     # Replication configs
-    wal_level=logical
-    max_wal_senders=10
-    max_replication_slots=10
-    track_commit_timestamp=on
+    listen_addresses = '*'
+    max_wal_senders = 10
+    wal_level = logical
+    max_connections = 100
+    shared_buffers = 128MB
+
+    # Logging
+    log_destination = 'stderr,csvlog'
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename= 'postgresql-%Y-%m-%d_%H%M%S.log'
