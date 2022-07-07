@@ -29,7 +29,7 @@ Optional path is included to deploy without Vault.
 ## Overview
 Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces 
 will run in separate namespaces in a GKE cluster.
-![Solution Diagram](redis-connect-k8s_postgres.png)
+![Solution Diagram](images/redis-connect-k8s_postgres.png)
 
 ## Important Links
 
