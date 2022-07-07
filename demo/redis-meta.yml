@@ -8,7 +8,10 @@ spec:
   rolesPermissions:
   - type: redis-enterprise
     role: "DB Member"
-    acl: "Not Dangerous"
+    acl: "Full Access"
+  - type: redis-enterprise
+    role: "Admin"
+    acl: "Full Access"
   modulesList: 
   - name: timeseries
     version: 1.6.9

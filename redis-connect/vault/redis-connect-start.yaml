@@ -17,13 +17,27 @@ spec:
       annotations:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "redis-connect"
-        vault.hashicorp.com/secret-volume-path: "/vault/secrets"
+        vault.hashicorp.com/secret-volume-path: "/opt/redislabs/redis-connect/config/samples/credentials"
         vault.hashicorp.com/agent-inject-file-redis-connect: "redisconnect_credentials_postgresql_postgres-job"
         vault.hashicorp.com/agent-inject-secret-redis-connect: 'database/creds/redis-connect'
         vault.hashicorp.com/agent-inject-template-redis-connect: |
           {{ with secret "database/creds/redis-connect" -}}
           source.username={{ .Data.username }}
           source.password={{ .Data.password }}
+          {{- end }}
+        vault.hashicorp.com/agent-inject-file-redis-enterprise-role: "redisconnect_credentials_redis_postgres-job"
+        vault.hashicorp.com/agent-inject-secret-redis-enterprise-role: 'database/creds/redis-enterprise-database'
+        vault.hashicorp.com/agent-inject-template-redis-enterprise-role: |
+          {{ with secret "database/creds/redis-enterprise-database" -}}
+          target.username={{ .Data.username }}
+          target.password={{ .Data.password }}
+          {{- end }}
+        vault.hashicorp.com/agent-inject-file-redis-meta-role: "redisconnect_credentials_jobmanager.properties"
+        vault.hashicorp.com/agent-inject-secret-redis-meta-role: 'database/creds/redis-meta'
+        vault.hashicorp.com/agent-inject-template-redis-meta-role: |
+          {{ with secret "database/creds/redis-meta" -}}
+          jobmanager.username={{ .Data.username }}
+          jobmanager.password={{ .Data.password }}
           {{- end }}
     spec:
       serviceAccountName: redis-connect
@@ -57,8 +71,6 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /opt/redislabs/redis-connect/config  # must match env:REDISCONNECT_CONFIG in this file.
-        - name: credential-volume
-          mountPath: /opt/redislabs/redis-connect/config/samples/credentials 
       volumes:
       - name: config-volume
         configMap:
@@ -68,16 +80,6 @@ spec:
             path: jobmanager.properties
           - key: logback.xml
             path: logback.xml
-      - name: credential-volume
-        configMap:
-          name: redis-connect-config
-          items:
-          - key: redisconnect_credentials_jobmanager.properties
-            path: redisconnect_credentials_jobmanager.properties
-          - key: redisconnect_credentials_redis_postgres-job.properties
-            path: redisconnect_credentials_redis_postgres-job.properties
-          - key: redisconnect_credentials_postgresql_postgres-job.properties
-            path: redisconnect_credentials_postgresql_postgres-job.properties
 # #### uncomment the following six lines if you have custom
 #  transformation implementation and replace the jar with
 #  your own.

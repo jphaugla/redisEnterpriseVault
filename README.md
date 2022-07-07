@@ -17,9 +17,11 @@ Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Va
   - [Install Redis Enterprise k8s](#install-redis-enterprise-k8s)
   - [Create Redis Enterprise Databases](#create-redis-enterprise-databases)
   - [Add Redisinsights](#add-redisinsights)
-  - [Vault](#vault)
   - [Install Kubegres](#install-kubegres)
+  - [Vault](#vault)
   - [Redis Connect](#redis-connect-configuration)
+    - [Redis Connect with Vault](#redis-connect-with-vault)
+    - [Redis Connect without Vault](#redis-connect-without-vault)
   
 &nbsp;
 
@@ -38,6 +40,7 @@ will run in separate namespaces in a GKE cluster.
 * [Redis Connect Postgres Sampl](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo)
 * [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 * [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
+* [Vault k8 injector](https://www.vaultproject.io/docs/platform/k8s/injector)
 
 ## Technical Overview
 
@@ -144,6 +147,34 @@ kubectl port-forward deployment/redisinsight 8001
 | Username | (leave blank)                             |
 | Password | FW2mFXEH (from ./getDatabasepw.sh above)  |
 
+### Install Kubegres
+Based on the instructions so also read these as steps are performed for deeper explanation [Kubegres getting started](https://www.kubegres.io/doc/getting-started.html)
+This creates, kubegres, create configmap to enable postgres replication, add postgres database and password, and create the one node database
+The replication technique with the configmap uses this link  [Override default configs](https://www.kubegres.io/doc/override-default-configs.html)
+```bash
+cd $POSTGRES
+kubectl apply -f https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
+kubectl create namespace postgres
+kubectl config set-context --current --namespace=postgres
+kubectl apply -f postgres-conf-override.yaml
+kubectl apply -f my-postgres-secret.yaml
+kubectl apply -f my-postgres.yaml
+```
+* create database and tables needed for redis-connect
+  * find the pod name for postgres 
+  * copy database and table creation to pod 
+  * use the password in the my-postgres-secret.yaml file when prompted with psql
+```bash
+cd $SAMPLES
+kubectl get pods
+kubectl postgres_cdc.sql mypostgres-1-0:/
+kubectl exec --stdin --tty  mypostgres-1-0 -- /bin/sh
+psql -Upostgres -W
+create database "RedisConnect";
+\c "RedisConnect"
+\i postgres_cdc.sql
+```
+
 ### Vault
 
 #### Install helm and vault on GKE
@@ -207,8 +238,8 @@ vault write database/config/demo-rec-redis-meta plugin_name="redisenterprise-dat
 ```
 #### Create database roles
 ```bash
-vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"DB Member\"}" default_ttl=90m max_ttl=100m
-vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"DB Member\"}" default_ttl=90m max_ttl=100m
+vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
+vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
 ```
 #### test the database connections
 Using the information from getDatabasePw.sh above.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
@@ -226,7 +257,7 @@ vault read database/creds/redis-enterprise-database
       Key                Value
       ---                -----
       lease_id           database/creds/redis-enterprise-database/JVsEvOrtZfK46dMO7GWRxjTW
-      lease_duration     3m
+      lease_duration     90m
       lease_renewable    true
       password           blZxlE10AS-zy-UBbjdh
       username           v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982
@@ -239,7 +270,7 @@ vault read database/creds/redis-meta
       Key                Value
       ---                -----
       lease_id           database/creds/redis-meta/iahGKJ9XNkisGsyLgW89Ohpt
-      lease_duration     3m
+      lease_duration     90m
       lease_renewable    true
       password           Vfo2ajqBvWAVKFyI-ojR
       username           v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445
@@ -256,33 +287,6 @@ kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
 kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 ```
 * don't log out of vault, keep vault connection in a separate terminal and use the vault terminal as directed
-### Install Kubegres
-Based on the instructions so also read these as steps are performed for deeper explanation [Kubegres getting started](https://www.kubegres.io/doc/getting-started.html)
-This creates, kubegres, create configmap to enable postgres replication, add postgres database and password, and create the one node database
-The replication technique with the configmap uses this link  [Override default configs](https://www.kubegres.io/doc/override-default-configs.html)
-```bash
-cd $POSTGRES
-kubectl apply -f https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
-kubectl create namespace postgres
-kubectl config set-context --current --namespace=postgres
-kubectl apply -f postgres-conf-override.yaml
-kubectl apply -f my-postgres-secret.yaml
-kubectl apply -f my-postgres.yaml
-```
-* create database and tables needed for redis-connect
-  * find the pod name for postgres 
-  * copy database and table creation to pod 
-  * use the password in the my-postgres-secret.yaml file when prompted with psql
-```bash
-cd $SAMPLES
-kubectl get pods
-kubectl postgres_cdc.sql mypostgres-1-0:/
-kubectl exec --stdin --tty  mypostgres-1-0 -- /bin/sh
-psql -Upostgres -W
-create database "RedisConnect";
-\c "RedisConnect"
-\i postgres_cdc.sql
-```
 
 ### Redis Connect Configuration
 * create service account and namespace
@@ -292,6 +296,8 @@ kubectl create sa redis-connect
 kubectl create namespace redis-connect
 kubectl config set-context --current --namespace=redis-connect
 ```
+#### Redis Connect With Vault
+not needed if not doing vault (skip to [Without Vault](#redis-connect-without-vault))
 * go to vault terminal
 ```bash
 vault write database/config/kube-postgres \
@@ -310,42 +316,30 @@ vault write database/roles/redis-connect \
 ```
 * authorize all the databases in kubernetes with the vault connection
 ```bash
-vault policy write redis-enterprise-db-policy - <<EOF
+vault policy write redis-connect-policy - <<EOF
  path "database/creds/redis-enterprise-database" {
    capabilities = ["read"]
  }
-EOF
-vault policy write redis-meta-policy - <<EOF
  path "database/creds/redis-meta" {
    capabilities = ["read"]
  }
-EOF
-vault policy write redis-connect-policy - <<EOF
 path "database/creds/redis-connect" {
   capabilities = ["read"]
 }
 EOF
+
 vault write auth/kubernetes/role/redis-connect \
     bound_service_account_names=redis-connect \
     bound_service_account_namespaces=redis-connect \
     policies=redis-connect-policy \
     ttl=24h
-vault write auth/kubernetes/role/redis-enterprise-role \
-    bound_service_account_names=redis-connect \
-    bound_service_account_namespaces=redis-connect \
-    policies=redis-enterprise-db-policy \
-    ttl=24h
-vault write auth/kubernetes/role/redis-meta-role \
-    bound_service_account_names=redis-connect \
-    bound_service_account_namespaces=redis-connect \
-    policies=redis-meta-policy \
-    ttl=24h
+
 ```
 
-
-#### Edit redis-connect files
+* Edit redis-connect files
 * Can rerun the script to pull the password for the database
 * Edit the jobmanager.properties file for the correct connection parameters in redis.connection.url
+  * these parameters can be retrieved using ```$DEMO/getDatabasePw.sh```
 * Edit redisconnect_credentials_jobmanager.properties for the correct metadata database password
 * create configmap with jobmanages.properties, credentials and logback
   * this configmap is used in the redis-connect-start.yaml to mount these files appropriately to hold the necessary configuration information 
@@ -355,17 +349,68 @@ $DEMO/getDatabasePw.sh
 vi jobmanager.properties
 kubectl create configmap redis-connect-config \
   --from-file=jobmanager.properties=jobmanager.properties \
-  --from-file=redisconnect_credentials_jobmanager.properties=redisconnect_credentials_jobmanager.properties \
-  --from-file=redisconnect_credentials_redis_postgres-job.properties=redisconnect_credentials_redis_postgres-job.properties \
-  --from-file=redisconnect_credentials_postgresql_postgres-job.properties=redisconnect_credentials_postgresql_postgres-job.properties \
   --from-file=logback.xml=logback.xml
-kubectl apply -f redis-connect-start.yaml
+kubectl apply -f vault/redis-connect-start.yaml
 ```
-In another terminal, need to port-forward the rest API interface to set up the actual job
+#### Redis Connect Without Vault
 ```bash
-kubectl port-forward service/redis-connect-api-service 8282:8282
+$DEMO/getDatabasePw.sh
+vi jobmanager.properties
+kubectl create configmap redis-connect-config \
+  --from-file=jobmanager.properties=jobmanager.properties \
+  --from-file=redisconnect_credentials_jobmanager.properties=non-vault/redisconnect_credentials_jobmanager.properties \
+  --from-file=redisconnect_credentials_redis_postgres-job.properties=non-vault/redisconnect_credentials_redis_postgres-job.properties \
+  --from-file=redisconnect_credentials_postgresql_postgres-job.properties=non-vault/redisconnect_credentials_postgresql_postgres-job.properties \
+  --from-file=logback.xml=logback.xml
+kubectl apply -f non-vault/redis-connect-start.yaml
 ```
 
+
+### Test replication
+This section will define the redis-connect job using an API approach.  For more detail see this
+[demo section](https://github.com/redis-field-engineering/redis-connect-dist/examples/postgres/demo) in redis connection github
+In another terminal, need to port-forward the rest API interface to set up the actual job
+```bash
+kubectl port-forward pod/redis-connect-59475bcdd4-nwv5v 8282:8282
+```
+Use the [swagger interface]( http://localhost:8282/swagger-ui/index.html) to define the job and control the job execution
+* Save the job configuration using swagger interface ![swagger](images/swagger1.png)
+  * click on *POST* Save Job Configuration to bring up the API interface ![API](images/swagger-save-job.png)
+  * click on *Try It Out*
+  * Enter the jobname of *postgres-job*
+  * Click on *browse* and select the redis-connect/non-vault/postgres-job.json
+  * Click on *Execute*
+* Insert rows using postgres container
+```bash
+kubectl -n postgres exec --stdin --tty  mypostgres-1-0 -- /bin/sh
+psql -Upostgres -W
+\c "RedisConnect"
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (1, 'Allen', 'Terleto', 'FieldCTO', 1, '2018-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (2, 'Brad', 'Barnes', 'SA Manager', 1, '2019-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (3, 'Virag', 'Tripathi', 'Troublemaker', 1, '2020-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (4, 'Jason', 'Haugland', 'SA', 1, '2021-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (5, 'Ryan', 'Bee', 'Field Sales', 1, '2005-08-06', 20000, 10, 1);
+```
+* Run the initial bulk load of the job ![swagger start](images/swaggerStartjob.png)
+  * Click on *POST* START Job to biring up the API interface ![API start](images/swagger-run-load.png)
+  * click on *Try It Out*
+  * Enter the jobname of *postgres-job*
+  * Enter the jobtype of *load*
+* Test the results
+  * Use the [redisinsights](#add-redisinsights) to verify the data is loaded to redis
+* Run the stream load ![swagger start](images/swaggerStartjob.png)
+  * Click on *POST* START Job to bring up the API interface ![API start](images/swagger-run-load.png)
+```bash
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (111, 'Simon', 'Prickett', 'Tech Advocate', 1, '2016-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (112, 'Doug', 'Snyder','Territory Manager', 1, '2021-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (113, 'Jason', 'Plotch', 'Territory Manager', 1, '2021-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (114, 'Nail', 'Sirazitdinov', 'TAM', 1, '2010-08-06', 20000, 10, 1);
+INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept) VALUES (115, 'Manish', 'Arora', 'SA', 1, '2021-08-06', 20000, 10, 1);
+```
+* Test the results
+  * Use the [redisinsights](#add-redisinsights) to verify the data is loaded to redis
+  
+### Debug Ideas
 * Redis-connect job [documentation link](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo#start-redis-connect-postgres-connector)
 * look for resulting rows in redis enterprise using redisinsight (see directions above)
 * There are multiple methods to debug the running job.  Here are a few:
@@ -378,7 +423,7 @@ kubectl port-forward service/redis-connect-api-service 8282:8282
 kubectl get pods
 kubectl logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent-init
 kubectl logs redis-connect-postgres-595d6fb5f4-54c6v -c redis-connect-postgres
-kubectl  exec --stdin=true --tty=true pod/redis-connect-postgres-595d6fb5f4-54c6v -- /bin/sh
+kubectl exec --stdin=true --tty=true pod/redis-connect-postgres-595d6fb5f4-54c6v -- /bin/sh
 cd logs
 # investigate the log files 
 vi *
