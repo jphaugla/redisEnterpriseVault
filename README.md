@@ -378,7 +378,7 @@ Use the [swagger interface]( http://localhost:8282/swagger-ui/index.html) to def
   * click on *POST* Save Job Configuration to bring up the API interface ![API](images/swagger-save-job.png)
   * click on *Try It Out*
   * Enter the jobname of *postgres-job*
-  * Click on *browse* and select the redis-connect/non-vault/postgres-job.json
+  * Click on *browse* and select the redis-connect/postgres-job.json
   * Click on *Execute*
 * Insert rows using postgres container
 ```bash
