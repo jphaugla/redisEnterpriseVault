@@ -23,6 +23,7 @@ Optional path is included to deploy without Vault.
   - [Redis Connect](#redis-connect-configuration)
     - [Redis Connect with Vault](#redis-connect-with-vault)
     - [Redis Connect without Vault](#redis-connect-without-vault)
+- [Debug Ideas](#debug-ideas)
   
 &nbsp;
 
