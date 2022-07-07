@@ -29,7 +29,7 @@ Optional path is included to deploy without Vault.
 ## Overview
 Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces 
 will run in separate namespaces in a GKE cluster.
-![Solution Diagram](redis-connect-k8s.png)
+![Solution Diagram](redis-connect-k8s_postgres.png)
 
 ## Important Links
 
@@ -430,7 +430,7 @@ INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept
   * Use the [redisinsights](#add-redisinsights) to verify the data is loaded to redis
   
 ### Debug Ideas
-* Redis-connect job [documentation link](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo#start-redis-connect-postgres-connector)
+* Redis-connect job [documentation link](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/examples/postgres/demo#start-redis-connect)
 * look for resulting rows in redis enterprise using redisinsight (see directions above)
 * There are multiple methods to debug the running job.  Here are a few:
   * Find the pod name(s) for redis connect
@@ -444,7 +444,6 @@ kubectl -n redis-connect logs redis-connect-postgres-595d6fb5f4-54c6v -c redis-c
 kubectl -n redis-connect exec --stdin --tty  redis-connect-687bd546fc-44kvc -- /bin/sh
 ```
   * log in to the pod and look at log files 
-  * test the postgresql connection
   * there is a debug line in redis-connect-start.yaml that keeps the pod running even if there are connection errors-this is great for debug
   * NOTE: check the swagger UI for API commands that are easier to use than redisconnect.sh
   * Check the file systems mounted correctly
