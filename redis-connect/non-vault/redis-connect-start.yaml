@@ -55,8 +55,6 @@ spec:
           items:
           - key: jobmanager.properties
             path: jobmanager.properties
-          - key: logback.xml
-            path: logback.xml
       - name: credential-volume
         configMap:
           name: redis-connect-config

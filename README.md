@@ -208,7 +208,7 @@ export CLUSTER_ROOT_TOKEN=$(cat cluster-keys.json | jq -r ".root_token")
 kubectl exec vault-0 -- vault login $CLUSTER_ROOT_TOKEN
 ```
 #### Download the plugin file
-Make sure you grab the correct file-many similarily named files
+Make sure you grab the correct file-many similarly named files
 * download vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
 https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/releases
 * need to change the permissions, copy the file to the vault container, and pull the shasum for used later
@@ -244,15 +244,18 @@ vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_state
 #### test the database connections
 Using the information from getDatabasePw.sh above.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
 Grab another new terminal window to runt the port forward command.  (note, need the actual port from getDatabasePw.sh)
-NOTE:  the lower redis-cli command is using the username and password from the output of the read database command.  
+
 ```bash
 kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
 kubectl port-forward -n demo service/redis-meta 16254:16254
 ```
-Open a new terminal window  and test each database  
+NOTES:  
+* the redis-cli command is using the username and password from the output of the read database command
+* the vault read command must be done from the vault terminal 
+  * can log in to the vault container using  ```kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh```
+* From vault for redis-enterprise-database
 ```bash
-redis-cli -p 18154
->AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
+
 vault read database/creds/redis-enterprise-database
       Key                Value
       ---                -----
@@ -262,10 +265,8 @@ vault read database/creds/redis-enterprise-database
       password           blZxlE10AS-zy-UBbjdh
       username           v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982
 ```
-
+* From vault for redis-meta 
 ```bash
-redis-cli -p 16254
->AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
 vault read database/creds/redis-meta
       Key                Value
       ---                -----
@@ -274,6 +275,17 @@ vault read database/creds/redis-meta
       lease_renewable    true
       password           Vfo2ajqBvWAVKFyI-ojR
       username           v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445
+```
+Open a new terminal window  and test each database using the username and password values from the vault read database
+* redis-enterprise-database
+```bash
+redis-cli -p 18154
+>AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
+```
+* redis-meta
+```bash
+redis-cli -p 16254
+>AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
 ```
 
 #### Authorize kubernetes
@@ -314,7 +326,7 @@ vault write database/roles/redis-connect \
     default_ttl="60m" \
     max_ttl="60m"
 ```
-* authorize all the databases in kubernetes with the vault connection
+* create redis-connect policy and role
 ```bash
 vault policy write redis-connect-policy - <<EOF
  path "database/creds/redis-enterprise-database" {
@@ -348,8 +360,7 @@ vault write auth/kubernetes/role/redis-connect \
 $DEMO/getDatabasePw.sh
 vi jobmanager.properties
 kubectl create configmap redis-connect-config \
-  --from-file=jobmanager.properties=jobmanager.properties \
-  --from-file=logback.xml=logback.xml
+  --from-file=jobmanager.properties=jobmanager.properties 
 kubectl apply -f vault/redis-connect-start.yaml
 ```
 #### Redis Connect Without Vault
@@ -360,8 +371,7 @@ kubectl create configmap redis-connect-config \
   --from-file=jobmanager.properties=jobmanager.properties \
   --from-file=redisconnect_credentials_jobmanager.properties=non-vault/redisconnect_credentials_jobmanager.properties \
   --from-file=redisconnect_credentials_redis_postgres-job.properties=non-vault/redisconnect_credentials_redis_postgres-job.properties \
-  --from-file=redisconnect_credentials_postgresql_postgres-job.properties=non-vault/redisconnect_credentials_postgresql_postgres-job.properties \
-  --from-file=logback.xml=logback.xml
+  --from-file=redisconnect_credentials_postgresql_postgres-job.properties=non-vault/redisconnect_credentials_postgresql_postgres-job.properties 
 kubectl apply -f non-vault/redis-connect-start.yaml
 ```
 
