@@ -2,7 +2,8 @@
 
 ## Purpose
 
-Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Vault
+Redis Connect Demo integrating Redis Enterprise and Postgresql with Hashicorp Vault with all components running in kubernetes.
+Optional path is included to deploy without Vault.
 
 &nbsp;
 
@@ -37,7 +38,7 @@ will run in separate namespaces in a GKE cluster.
 * [Kubegres is a kubernetes operator for postgresql](https://www.kubegres.io/)
 * [Redis Enterprise k8s](https://github.com/RedisLabs/redis-enterprise-k8s-docs)
 * [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
-* [Redis Connect Postgres Sampl](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/connectors/postgres/demo)
+* [Redis Connect Postgres Sample](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/examples/postgres)
 * [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 * [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
 * [Vault k8 injector](https://www.vaultproject.io/docs/platform/k8s/injector)
@@ -45,10 +46,10 @@ will run in separate namespaces in a GKE cluster.
 ## Technical Overview
 
 * Follow the instructions using link above to "Set up vault on GKE"
-* Install Redis Enterpise on k8s using "Redis Enterprise k8s" link
-* Setup Vault and "Hashicorp Vault plugin on Redis Enterprise k8s"
+* Install Redis Enterprise on k8s using "Redis Enterprise k8s" link
 * Set up Postgresql using Kubegres
-* Work through Redis Connect
+* If using Vault, Setup Vault and "Hashicorp Vault plugin on Redis Enterprise k8s"
+* Work through Redis Connect using "With" or "Without" vault
 
 &nbsp;
 
@@ -62,17 +63,20 @@ will run in separate namespaces in a GKE cluster.
 
 &nbsp;
 
-There are a large number of directories to keep track of files.  A provided script will set up the following environment variables to make the task less arduous.  Another tip would be to have a window opened to each of the directories instead of relying on one terminal session.  Additionally, label each terminal session for the directory path in use.
+There are a large number of directories to keep track of files.  A provided script will set up the following environment variables to make the task less arduous.  
+Another tip would be to have a window opened to each of the directories instead of relying on one terminal session.  
+Additionally, label each terminal session for the directory path in use.
 
 ### Prepare repository working directories
-To get all of these moving parts working, multiple repositories are needed.  Then, a large number of directory changes are needed as different pieces are deployed.  To facilitate this, first set up the environment with a provided scripts and then pull all the necessary repositories.  Decide on one home git directory that will hold all the subdirectories needed.  The default in the environment scirpt is ```$HOME/gits```
+To get all of these moving parts working, multiple repositories are needed.  Then, a large number of directory changes are needed as different pieces are deployed.  
+To facilitate this, first set up the environment with a provided scripts and then pull all the necessary repositories.  Decide on one home git directory that will hold all the subdirectories needed.  The default in the environment scirpt is ```$HOME/gits```
 * Move to chosen git directory home and pull down the repositories
 ```bash
 git clone https://github.com/jphaugla/redisEnterpriseVault.git
 git clone https://github.com/RedisLabs/redis-enterprise-k8s-docs.git
 git clone https://github.com/redis-field-engineering/redis-connect-dist.git
 ```
-* edit the environment files for subsequent steps
+* edit and then source the environment files for subsequent steps
 ```bash
 cd redisEnterpriseVault
 source setEnvironmant.sh
@@ -80,11 +84,11 @@ source setEnvironmant.sh
 ```
 ### Create GKE cluster 
 
-* Tips on installing GKE
-  * Instead of using the provided script to create the GKE cluster, make sure compute nodes are decent size *e2-standard-8*.  
-  * Easier to use GCP console to get the desired node size.
-  * Start with 3 nodes in the default node pool-can always increase as needed.
-  * Once the GKE cluster is created, connect to the cluster.  To do this:
+Tips on installing GKE
+* Easier to use GCP console to get the desired node size.
+* Make sure compute nodes are decent size *e2-standard-8*.  
+* Start with 3 nodes in the default node pool-can always increase as needed.
+* Once the GKE cluster is created, connect to the cluster.  To do this:
     * Click on newly created cluster
 ![Select GKE Cluster](images/SelectGKEcluster.png)
     * Click to connect to the cluster
@@ -97,13 +101,13 @@ source setEnvironmant.sh
 cd $GIT_RE_K8S
 ```
 * Follow [Redis Enterprise k8s installation instructions](https://github.com/RedisLabs/redis-enterprise-k8s-docs#installation) all the way 
-* through to step 4.  Use the demo namespace as instructed.  So after Step 4, done with this section
+through to step 4.  Use the demo namespace as instructed.  The remaining steps (steps 5 and 6) from these instructions are not needed
 * Skip Step 5, the admission controller steps are not needed and neither are the webhook instructions
 * Don't do Step 6 as the databases for this github are in the k8s subdirectory of this github
 
 ### Create redis enterprise databases
 * Create two redis enterprise databases.  The first database is the Target database for redis connect and the second stores meta-data for redis-connect
-  * If, the database doesn't create, it may be the version of the timeseries module as it must fit with the deployed version
+  * If, the redis-meta database doesn't create, it may be the version of the timeseries module as it must fit with the deployed version.  Verify the module version for this redis enterprise version using [the release notes](https://docs.redis.com/latest/rs/release-notes/)
 ```bash
 cd $DEMO
 kubectl apply -f redis-enterprise-database.yml
@@ -117,14 +121,16 @@ kubectl apply -f redis-meta.yml
 #### Add Redisinsights 
 These instructions are based on [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
 &nbsp;
-The above instructions have two options for installing redisinights, this uses the second option to install
-[ without a service](https://docs.redis.com/latest/ri/installing/install-k8s/#create-the-redisinsight-deployment-without-a-service) (avoids creating a load balancer)
+The above instructions have two options for installing redisinights, this uses the second option to install 
+[without a service](https://docs.redis.com/latest/ri/installing/install-k8s/#create-the-redisinsight-deployment-without-a-service) (avoids creating a load balancer)
 * The yaml file apply below, creates redisinsights
+* Since no load balancer is deployed, must do a port-forward to be able to access redisinsights from the local machine's browser
+* Easiest, to open a new terminal window and label the terminal window *redisinsights port forward*
 ```bash
 kubectl apply -f redisinsight.yml
 kubectl port-forward deployment/redisinsight 8001
 ```
-* from chrome or firefox open the browser using http://localhost:8001
+* from chrome or firefox, open the browser using http://localhost:8001
 * Click "I already have a database"
 * Click "Connect to Redis Database"
 * Create Connection to target redis database with following parameter entries
@@ -138,7 +144,7 @@ kubectl port-forward deployment/redisinsight 8001
 | Password | DrCh7J31 (from ./getDatabasepw.sh above) |
 * click ok
 *repeat steps above for metadata database using following parameters
-*
+
 | Key      | Value                                     |
 |----------|-------------------------------------------|
 | host     | redis-meta.demo                           |
@@ -149,7 +155,7 @@ kubectl port-forward deployment/redisinsight 8001
 
 ### Install Kubegres
 Based on the instructions so also read these as steps are performed for deeper explanation [Kubegres getting started](https://www.kubegres.io/doc/getting-started.html)
-This creates, kubegres, create configmap to enable postgres replication, add postgres database and password, and create the one node database
+This creates kubegres, creates a postgres.conf configmap to enable postgres replication, adds postgres database and password, and creates the one node database
 The replication technique with the configmap uses this link  [Override default configs](https://www.kubegres.io/doc/override-default-configs.html)
 ```bash
 cd $POSTGRES
@@ -167,7 +173,7 @@ kubectl apply -f my-postgres.yaml
 ```bash
 cd $SAMPLES
 kubectl get pods
-kubectl postgres_cdc.sql mypostgres-1-0:/
+kubectl -n postgres cp postgres_cdc.sql mypostgres-1-0:/
 kubectl exec --stdin --tty  mypostgres-1-0 -- /bin/sh
 psql -Upostgres -W
 create database "RedisConnect";
@@ -229,7 +235,8 @@ kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh
 vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 sha256=739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
 ```
 #### Create database configurations in vault
-Using the information from the getClusterUnPw.sh script from above and using the username and password valued for redis enterprise cluster authentication.   For additional explanations peruse [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
+Using the information from the getClusterUnPw.sh script from above and using the username and password valued for redis enterprise cluster authentication.   
+For additional explanations peruse [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
 ```bash
 chmod 755 /usr/local/libexec/vault/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
 vault secrets enable database
@@ -276,7 +283,7 @@ vault read database/creds/redis-meta
       password           Vfo2ajqBvWAVKFyI-ojR
       username           v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445
 ```
-Open a new terminal window  and test each database using the username and password values from the vault read database
+Open a new terminal window  and test each database using the username and password values from the vault read database output
 * redis-enterprise-database
 ```bash
 redis-cli -p 18154
@@ -309,7 +316,7 @@ kubectl create namespace redis-connect
 kubectl config set-context --current --namespace=redis-connect
 ```
 #### Redis Connect With Vault
-not needed if not doing vault (skip to [Without Vault](#redis-connect-without-vault))
+not needed if not doing vault (skip to [Redis Connect Without Vault](#redis-connect-without-vault))
 * go to vault terminal
 ```bash
 vault write database/config/kube-postgres \
@@ -345,17 +352,12 @@ vault write auth/kubernetes/role/redis-connect \
     bound_service_account_namespaces=redis-connect \
     policies=redis-connect-policy \
     ttl=24h
-
 ```
-
-* Edit redis-connect files
-* Can rerun the script to pull the password for the database
 * Edit the jobmanager.properties file for the correct connection parameters in redis.connection.url
   * these parameters can be retrieved using ```$DEMO/getDatabasePw.sh```
-* Edit redisconnect_credentials_jobmanager.properties for the correct metadata database password
-* create configmap with jobmanages.properties, credentials and logback
-  * this configmap is used in the redis-connect-start.yaml to mount these files appropriately to hold the necessary configuration information 
-* start the server
+* create configmap with jobmanager.properties
+  * this configmap is used in the redis-connect-start.yaml to mount files appropriately
+* start the redis-connect server
 ```bash
 $DEMO/getDatabasePw.sh
 vi jobmanager.properties
@@ -364,6 +366,13 @@ kubectl create configmap redis-connect-config \
 kubectl apply -f vault/redis-connect-start.yaml
 ```
 #### Redis Connect Without Vault
+* Edit the jobmanager.properties file for the correct connection parameters in redis.connection.url
+  * these parameters can be retrieved using ```$DEMO/getDatabasePw.sh```
+* Edit each credentials file for the appropriate connection information
+  * For redisconnect_credentials_jobmanager.properties (redis-meta) and redisconnect_credentials_redis_postgres-job.properties (redis-enterprise-db) can use a null username and the password from getDatabasePw.sh
+* create configmap with jobmanager.properties and the credentials files
+  * this configmap is used in the redis-connect-start.yaml to mount files appropriately
+* start the redis-connect server
 ```bash
 $DEMO/getDatabasePw.sh
 vi jobmanager.properties
@@ -377,7 +386,7 @@ kubectl apply -f non-vault/redis-connect-start.yaml
 
 
 ### Test replication
-This section will define the redis-connect job using an API approach.  For more detail see this
+This section will define the redis-connect job using an API approach.  For more detail on the redis-connect swagger interface, see this
 [demo section](https://github.com/redis-field-engineering/redis-connect-dist/examples/postgres/demo) in redis connection github
 In another terminal, need to port-forward the rest API interface to set up the actual job
 ```bash
@@ -426,14 +435,20 @@ INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept
 * There are multiple methods to debug the running job.  Here are a few:
   * Find the pod name(s) for redis connect
   * get the logs for init and main container
+
+```bash
+kubectl -n redis-connect get pods
+kubectl -n redis-connect logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent-init
+kubectl -n redis-connect logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent
+kubectl -n redis-connect logs redis-connect-postgres-595d6fb5f4-54c6v -c redis-connect
+kubectl -n redis-connect exec --stdin --tty  redis-connect-687bd546fc-44kvc -- /bin/sh
+```
   * log in to the pod and look at log files 
   * test the postgresql connection
-  * there is a debug line in redis-connect-start.yaml that keeps the pod running even if their are connection errors-this is great for debug
+  * there is a debug line in redis-connect-start.yaml that keeps the pod running even if there are connection errors-this is great for debug
+  * NOTE: check the swagger UI for API commands that are easier to use than redisconnect.sh
+  * Check the file systems mounted correctly
 ```bash
-kubectl get pods
-kubectl logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent-init
-kubectl logs redis-connect-postgres-595d6fb5f4-54c6v -c redis-connect-postgres
-kubectl exec --stdin=true --tty=true pod/redis-connect-postgres-595d6fb5f4-54c6v -- /bin/sh
 cd logs
 # investigate the log files 
 vi *
@@ -441,4 +456,10 @@ vi *
 cd ../bin
 ./redisconnect.sh cli
 > validate connection -t JDBCConnectionProvider -i RDBConnection
+exit
+df -h
 ```
+this should be output from the df -h
+![df ouput](images/redis-connect-mounts.png)
+  * Ensure each credential file is named correctly
+  * Test the username/password from the credential file to ensure the connection works from the respective database
