@@ -80,7 +80,7 @@ git clone https://github.com/redis-field-engineering/redis-connect-dist.git
 * edit and then source the environment files for subsequent steps
 ```bash
 cd redisEnterpriseVault
-source setEnvironmant.sh
+source setEnvironment.sh
 
 ```
 ### Create GKE cluster 
@@ -101,10 +101,7 @@ Tips on installing GKE
 ```bash
 cd $GIT_RE_K8S
 ```
-* Follow [Redis Enterprise k8s installation instructions](https://github.com/RedisLabs/redis-enterprise-k8s-docs#installation) all the way 
-through to step 4.  Use the demo namespace as instructed.  The remaining steps (steps 5 and 6) from these instructions are not needed
-* Skip Step 5, the admission controller steps are not needed and neither are the webhook instructions
-* Don't do Step 6 as the databases for this github are in the k8s subdirectory of this github
+* Follow [Redis Enterprise k8s installation instructions](https://docs.redis.com/latest/kubernetes/deployment/quick-start/) using *demo* as the namespace.  Stop before the step to *Enable the Admission Controller".  This step is not needed
 
 ### Create redis enterprise databases
 * Create two redis enterprise databases.  The first database is the Target database for redis connect and the second stores meta-data for redis-connect
@@ -241,13 +238,13 @@ For additional explanations peruse [Hashicorp Vault plugin on Redis Enterprise k
 ```bash
 chmod 755 /usr/local/libexec/vault/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
 vault secrets enable database
-vault write database/config/demo-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username=demo@redislabs.com password=vubYurxK
-vault write database/config/demo-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://rec.demo.svc:9443" allowed_roles="*" database=redis-meta username=demo@redislabs.com password=vubYurxK
+vault write database/config/demo-test-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username=demo@redislabs.com password=vubYurxK
+vault write database/config/demo-test-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-meta username=demo@redislabs.com password=vubYurxK
 ```
 #### Create database roles
 ```bash
-vault write database/roles/redis-enterprise-database db_name=demo-rec-redis-enterprise-database creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
-vault write database/roles/redis-meta db_name=demo-rec-redis-meta creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
+vault write database/roles/redis-enterprise-database db_name=demo-test-rec-redis-enterprise-database creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
+vault write database/roles/redis-meta db_name=demo-test-rec-redis-meta creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
 ```
 #### test the database connections
 Using the information from getDatabasePw.sh above.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
