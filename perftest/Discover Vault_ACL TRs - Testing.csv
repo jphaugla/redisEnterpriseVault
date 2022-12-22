@@ -1,0 +1,18 @@
+number of DBs,number of roles,sleep time (seconds),TTL (minutes),total runs,separate role per database?,cnm_exec,redis-serv,/opt/redislabs,htop master node load average,Rest-API,ACL file size /var/opt/redislabs/redis/redis-3.acl ,highest viewed number of state machine,,
+4,1,2,,100,no,25,,,1.27,,,,,
+4,1,1,,100,no,40,15,45,2.2,,4k,5,,
+4,1,0.5,,100,no,50,,,3.2,,4k,,,
+4,1,0.5,,200,no,50,17,45,5.5,,4k,175,,
+10,1,1,2,100,no,40,18,49,4.2,,15K,97,,
+10,1,0.5,,200,no,51,17,31,7.5,,15k,253,,
+10 plus 100shard db,1,1,2,100,no,50,18,38,6,,15K,188,,
+10 plus 100shard db,1,0.5,2,200,no,32,32,30,3.2,,15K,358,,
+10 plus 100shard db,1,1,2,100,yes,9,20,45,2,,,5,still spikes on the delete to 3.5,
+10 plus 100shard db,1,0.5,2,200,yes,9,20,40,2,,,137,still spikes on the delete to 3.5,update redis-acls
+,,,,,,,,,,,,,in /var/opt/redislabs/log,
+,,,,,,,,,,,,,grep -il acl *.log,shows entries in envoy_access.log
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,running state machines,
+,,,,,,,,,,,,,rladmin cluster running_actions |wc -l,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,opt/redislabs surges late when deletes start,

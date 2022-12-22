@@ -37,7 +37,9 @@ will run in separate namespaces in a GKE cluster.
 * [Set up vault on GKE](https://learn.hashicorp.com/tutorials/vault/kubernetes-google-cloud-gke)
 * [Redis Connect Tips](https://github.com/Redislabs-Solution-Architects/redis-connect-k8s-helpers)
 * [Kubegres is a kubernetes operator for postgresql](https://www.kubegres.io/)
-* [Redis Enterprise k8s](https://github.com/RedisLabs/redis-enterprise-k8s-docs)
+* [Redis Enterprise k8s github](https://github.com/RedisLabs/redis-enterprise-k8s-docs)
+* [Redis Enterprise k8s quickstart docs]((https://docs.redis.com/latest/kubernetes/deployment/quick-start/)
+* [Redis Enterprise k8s docs]((https://docs.redis.com/latest/kubernetes/deployment/)
 * [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
 * [Redis Connect Postgres Sample](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/examples/postgres)
 * [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
@@ -172,7 +174,7 @@ kubectl apply -f my-postgres.yaml
 cd $SAMPLES
 kubectl get pods
 kubectl -n postgres cp postgres_cdc.sql mypostgres-1-0:/
-kubectl exec --stdin --tty  mypostgres-1-0 -- /bin/sh
+kubectl -n postgres exec --stdin --tty  mypostgres-1-0 -- /bin/sh
 psql -Upostgres -W
 create database "RedisConnect";
 \c "RedisConnect"
@@ -229,7 +231,7 @@ $DEMO/getClusterUnPw.sh
 ####  log to vault container and enable vault plugin
 Use the shasum value pulled from above and not the current value set equal to sha256
 ```bash
-kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh
+kubectl -n vault exec --stdin=true --tty=true vault-0 -- /bin/sh
 vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 sha256=739421599adfe3cdc53c8d6431a3066bfc0062121ba8c9c68e49119ab62a5759
 ```
 #### Create database configurations in vault
