@@ -1,0 +1,36 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+- name: Create a k8s postgres namespace
+  kubernetes.core.k8s:
+    name: postgres
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Download kubegres manifest to the cluster
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
+    dest: ~/kubegres.yaml
+    mode: '0664'
+
+- name: apply kubegres manifest
+  kubernetes.core.k8s:
+    state: present
+    src: ~/kubegres.yaml
+
+- name: Apply postgres-con-override.yaml
+  kubernetes.core.k8s:
+    namespace: postgres
+    src: ../../postgres/postgres-conf-override.yaml
+
+- name: Apply postgres secret yaml
+  kubernetes.core.k8s:
+    namespace: postgres
+    src: ../../postgres/my-postgres-secret.yaml
+
+- name: Apply postgres yaml
+  kubernetes.core.k8s:
+    namespace: postgres
+    src: ../../postgres/my-postgres.yaml

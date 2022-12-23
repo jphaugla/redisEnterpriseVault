@@ -1,0 +1,20 @@
+# Run me: ansible-playbook -vv --extra-vars cluster_state=[absent|present] playbook.yml
+# Reference: https://docs.ansible.com/ansible/latest/scenario_guides/guide_gce.html
+
+---
+
+- name: Create GKE Cluster using Ansible GCP Library
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    gcp_project: central-beach-194106
+    gcp_cred_kind: serviceaccount
+    gcp_cred_file: /Users/jasonhaugland/.gcp/bb-gcp-terraform.json
+    gcp_zone: us-central1-a
+    gcp_region: us-central1
+    network: jph-gke-network
+    subnet: jph-gke-subnet
+
+  roles:
+    - gke-test

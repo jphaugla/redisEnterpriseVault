@@ -1,0 +1,22 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: "Setting cluster config variables"
+  set_fact:
+    initial_node_count: 2
+    initial_cluster_version: "1.23"
+
+- name: "Connect to cluster (update kubeconfig)"
+  shell: "gcloud container clusters get-credentials {{ cluster_name }} --region {{ gcp_region }} --project {{ gcp_project }}"
+  when: cluster_state == "present"
+
+- name: Create redis-enterprise cluster
+  include_tasks: create-redis-enterprise.yml
+
+- name: Create redis databases
+  include_tasks: create-databases.yml
+ 
+- name: Create postgres 
+  include_tasks: create-postgres.yml

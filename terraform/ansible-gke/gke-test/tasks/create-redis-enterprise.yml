@@ -1,0 +1,51 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: Create a k8s namespace
+  kubernetes.core.k8s:
+    name: demo
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Apply bundle.yaml
+  kubernetes.core.k8s:
+    namespace: demo
+    src: "{{ bundle_location }}"
+
+- name: Wait till the redis-enterprise-operator is created
+  kubernetes.core.k8s_info:
+    kind: deployment
+    wait: yes
+    name: redis-enterprise-operator
+    namespace: demo
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Create a Service object from an inline definition
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: app.redislabs.com/v1
+      kind: RedisEnterpriseCluster
+      metadata:
+        name: test-rec
+        namespace: demo
+      spec:
+        nodes: 3
+
+- name: Wait till the redis enterprise cluster is created
+  kubernetes.core.k8s_info:
+    kind: rec
+    wait: yes
+    name: test-rec
+    namespace: demo
+    wait_sleep: 10
+    wait_timeout: 360
+ 
+- name: Apply redisinsights
+  kubernetes.core.k8s:
+    namespace: demo
+    src: ../../demo/redisinsight.yml
