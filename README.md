@@ -13,16 +13,18 @@ Optional path is included to deploy without Vault.
 - [Important Links](#important-links)
 - [Technical Overview](#technical-overview)
 - [Instructions](#instructions)
-  - [Prepare repository working directories](#prepare-repository-working-directories)
-  - [Create GKE cluster](#create-gke-cluster)
-  - [Install Redis Enterprise k8s](#install-redis-enterprise-k8s)
-  - [Create Redis Enterprise Databases](#create-redis-enterprise-databases)
-  - [Add Redisinsights](#add-redisinsights)
-  - [Install Kubegres](#install-kubegres)
-  - [Vault](#vault)
-  - [Redis Connect](#redis-connect-configuration)
-    - [Redis Connect with Vault](#redis-connect-with-vault)
-    - [Redis Connect without Vault](#redis-connect-without-vault)
+  - [Run with terraform ansible](#run-with-terraform-ansible)
+  - [Run Manually](#run-manually)
+    - [Prepare repository working directories](#prepare-repository-working-directories)
+    - [Create GKE cluster](#create-gke-cluster)
+    - [Install Redis Enterprise k8s](#install-redis-enterprise-k8s)
+    - [Create Redis Enterprise Databases](#create-redis-enterprise-databases)
+    - [Add Redisinsights](#add-redisinsights)
+    - [Install Kubegres](#install-kubegres)
+    - [Vault](#vault)
+    - [Redis Connect](#redis-connect-configuration)
+      - [Redis Connect with Vault](#redis-connect-with-vault)
+      - [Redis Connect without Vault](#redis-connect-without-vault)
 - [Debug Ideas](#debug-ideas)
   
 &nbsp;
@@ -76,6 +78,13 @@ The suggestion that worked for me was this
 pip3 install --global-option=build_ext \
             --global-option="-I/usr/local/opt/openssl/include" \
             --global-option="-L/usr/local/opt/openssl/lib" psycopg2
+```
+
+* kick off the terraform creation
+```bash
+cd terraform
+terraform init
+terraform apply 
 ```
 
 ### Run manually
