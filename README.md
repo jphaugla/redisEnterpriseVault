@@ -30,7 +30,7 @@ Optional path is included to deploy without Vault.
 ## Overview
 Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces 
 will run in separate namespaces in a GKE cluster.
-![Solution Diagram](images/redis-connect-k8s_postgres.png)
+![Solution Diagram](images/redis_connect_k8s_postgres.png)
 
 ## Important Links
 
@@ -38,8 +38,8 @@ will run in separate namespaces in a GKE cluster.
 * [Redis Connect Tips](https://github.com/Redislabs-Solution-Architects/redis-connect-k8s-helpers)
 * [Kubegres is a kubernetes operator for postgresql](https://www.kubegres.io/)
 * [Redis Enterprise k8s github](https://github.com/RedisLabs/redis-enterprise-k8s-docs)
-* [Redis Enterprise k8s quickstart docs]((https://docs.redis.com/latest/kubernetes/deployment/quick-start/)
-* [Redis Enterprise k8s docs]((https://docs.redis.com/latest/kubernetes/deployment/)
+* [Redis Enterprise k8s quickstart docs](https://docs.redis.com/latest/kubernetes/deployment/quick-start/)
+* [Redis Enterprise k8s docs](https://docs.redis.com/latest/kubernetes/deployment/)
 * [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
 * [Redis Connect Postgres Sample](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/examples/postgres)
 * [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
@@ -61,6 +61,24 @@ will run in separate namespaces in a GKE cluster.
 &nbsp;
 
 ## Instructions
+
+### Run with terraform ansible
+* apply additional pip installs
+```bash
+pip3 install requests
+pip3 install google-auth
+pip3 install kubernetes
+pip3 install psycopg2
+```
+I had errors on the last install and need use [this psycopg2 install debug](https://stackoverflow.com/questions/27264574/import-psycopg2-library-not-loaded-libssl-1-0-0-dylib)   
+The suggestion that worked for me was this
+```bash
+pip3 install --global-option=build_ext \
+            --global-option="-I/usr/local/opt/openssl/include" \
+            --global-option="-L/usr/local/opt/openssl/lib" psycopg2
+```
+
+### Run manually
 
 ***IMPORTANT NOTE**: Creating this demo application in your GCP account will create and consume GCP resources, which **will cost money**.
 

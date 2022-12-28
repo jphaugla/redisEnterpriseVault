@@ -14,9 +14,35 @@
 
 - name: Create redis-enterprise cluster
   include_tasks: create-redis-enterprise.yml
+  when:
+    - create_redis
 
 - name: Create redis databases
   include_tasks: create-databases.yml
+  when:
+    - create_redis_databases
  
 - name: Create postgres 
   include_tasks: create-postgres.yml
+  when:
+    - create_postgres
+ 
+- name: Create vault 
+  include_tasks: create-vault.yml
+  when:
+    - create_vault
+ 
+- name: Unseal vault 
+  include_tasks: unseal-vault.yml
+  when:
+    - unseal_vault
+ 
+- name: vault plugin copy
+  include_tasks: vault-plugin.yml
+  when:
+    - vault_plugin
+ 
+- name: vault write database config
+  include_tasks: vault-write-database.yml
+  when:
+    - vault_write_database

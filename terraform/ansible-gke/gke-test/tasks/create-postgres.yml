@@ -11,14 +11,14 @@
 
 - name: Download kubegres manifest to the cluster
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
-    dest: ~/kubegres.yaml
+    url: https://raw.githubusercontent.com/reactive-tech/kubegres/v1.16/kubegres.yaml
+    dest: temp/kubegres.yaml
     mode: '0664'
 
 - name: apply kubegres manifest
   kubernetes.core.k8s:
     state: present
-    src: ~/kubegres.yaml
+    src: temp/kubegres.yaml
 
 - name: Apply postgres-con-override.yaml
   kubernetes.core.k8s:
@@ -34,3 +34,12 @@
   kubernetes.core.k8s:
     namespace: postgres
     src: ../../postgres/my-postgres.yaml
+
+- name: Wait till the postgres service is created
+  kubernetes.core.k8s_info:
+    kind: service
+    wait: yes
+    name: mypostgres
+    namespace: postgres
+    wait_sleep: 10
+    wait_timeout: 360

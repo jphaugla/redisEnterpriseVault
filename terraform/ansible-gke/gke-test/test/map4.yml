@@ -1,0 +1,28 @@
+---
+- name: remap data from json
+  hosts: localhost
+  become: false
+  gather_facts: false
+  vars:
+    data: { "recovery_keys_b64": [], "recovery_keys_hex": [], "recovery_keys_shares": 0, "recovery_keys_threshold": 0, "root_token": "hvs.boIHyeB2e59CfIgaFxzfr5Ku", "unseal_keys_b64": [ "IxoVdtIEhI7XRii1UJ3bUCoUc6BXgS9PZXMr3D08FEg=" ], "unseal_keys_hex": [ "231a1576d204848ed74628b5509ddb502a1473a057812f4f65732bdc3d3c1448" ], "unseal_shares": 1, "unseal_threshold": 1 }
+  tasks:
+    - name: create dictionary
+      set_fact:
+         unseal_keys: "{{ data.unseal_keys_b64.0 }}"
+    - name: create dictionary
+      set_fact:
+         root_token: "{{ data.root_token }}"
+    - name: print out unseal
+      debug: 
+        var: unseal_keys
+    - name: print out root
+      debug: 
+        var: root_token
+    - name: save root token file of vault keys
+      copy:
+        content="{{ unseal_keys }}"
+        dest=unseal_keys.txt
+    - name: save all keys
+      copy:
+        content="{{ data }}"
+        dest=all_keys.json

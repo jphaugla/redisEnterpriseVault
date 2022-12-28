@@ -1,0 +1,7 @@
+create_redis: False
+create_redis_databases: False
+create_postgres: False
+create_vault: False
+unseal_vault: False
+vault_plugin: True
+vault_write_database: True

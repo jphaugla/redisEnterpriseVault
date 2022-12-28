@@ -1,0 +1,49 @@
+---
+- name: Get cluster password
+  shell: "kubectl -n demo get secret/test-rec -o=json"
+  register: cluster_secrets
+
+- name: save cluster secrets
+  copy:
+    content="{{ cluster_secrets.stdout | from_json }}"
+    dest=temp/cluster_secrets.txt
+
+- name: cluster username
+  set_fact:
+     cluster_username: "{{ (cluster_secrets.stdout | from_json).data.username }}"
+
+- debug: var=cluster_username
+
+- name: cluster user base64
+  set_fact:
+     cluster_base64_username: "{{ cluster_username | b64decode }}"
+
+- debug: var=cluster_base64_username
+
+- name: save cluster username
+  copy:
+    content="{{ cluster_base64_username }}"
+    dest=temp/cluster_un.txt
+
+- name: cluster password
+  set_fact:
+     cluster_pw: "{{ (cluster_secrets.stdout | from_json).data.password }}"
+
+- debug: var=cluster_pw
+
+- name: cluster pw base64
+  set_fact:
+     cluster_base64_pw: "{{ cluster_pw | b64decode }}"
+
+- debug: var=cluster_base64_pw
+
+- name: save cluster password
+  copy:
+    content="{{ cluster_base64_pw }}"
+    dest=temp/cluster_pw.txt
+
+- name: vault write database config
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault write database/config/demo-test-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username=demo@redislabs.com password="{{ cluster_base64_pw }}"

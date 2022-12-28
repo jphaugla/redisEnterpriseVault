@@ -1,0 +1,13 @@
+---
+- name: remap data from json
+  hosts: localhost
+  become: false
+  gather_facts: false
+  vars:
+    data: { "recovery_keys_b64": [], "recovery_keys_hex": [], "recovery_keys_shares": 0, "recovery_keys_threshold": 0, "root_token": "hvs.boIHyeB2e59CfIgaFxzfr5Ku", "unseal_keys_b64": [ "IxoVdtIEhI7XRii1UJ3bUCoUc6BXgS9PZXMr3D08FEg=" ], "unseal_keys_hex": [ "231a1576d204848ed74628b5509ddb502a1473a057812f4f65732bdc3d3c1448" ], "unseal_shares": 1, "unseal_threshold": 1 }
+    vaultinitresult: { "recovery_keys_b64": [], "recovery_keys_hex": [], "recovery_keys_shares": 0, "recovery_keys_threshold": 0, "root_token": "hvs.L56rFCZRVr90V18Oy6VeCfOJ", "unseal_keys_b64": [ "eRX3S9prbPvnbo8F/Cks8eX32fonFNTS0rq/lnJiPu8=" ], "unseal_keys_hex": [ "7915f74bda6b6cfbe76e8f05fc292cf1e5f7d9fa2714d4d2d2babf9672623eef" ], "unseal_shares": 1, "unseal_threshold": 1 }
+  tasks:
+    - name: remap jason
+      set_fact:
+        "{{ item['key'] }}": "{{ item['value'] }}"
+      loop: "{{ vaultinitresult | dict2items }}" 
