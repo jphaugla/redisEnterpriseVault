@@ -37,7 +37,6 @@
     namespace: vault
     pod: vault-0
     command: vault write sys/plugins/catalog/database/redisenterprise-database-plugin command=vault-plugin-database-redis-enterprise_0.1.3_linux_amd64 sha256="{{ shell_stat.stat.checksum }}"
-  ignore_errors: true
 
 - name: vault enable database
   kubernetes.core.k8s_exec:

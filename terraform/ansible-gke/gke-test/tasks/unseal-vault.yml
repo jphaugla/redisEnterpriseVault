@@ -59,5 +59,3 @@
     namespace: vault
     pod: vault-0
     command: vault status
-  ignore_errors: true
-

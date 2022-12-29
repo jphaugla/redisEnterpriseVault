@@ -39,6 +39,7 @@ will run in separate namespaces in a GKE cluster.
 * [Set up vault on GKE](https://learn.hashicorp.com/tutorials/vault/kubernetes-google-cloud-gke)
 * [Redis Connect Tips](https://github.com/Redislabs-Solution-Architects/redis-connect-k8s-helpers)
 * [Kubegres is a kubernetes operator for postgresql](https://www.kubegres.io/)
+* [Postgres with k8s](https://groups.google.com/g/ansible-project/c/RGh5Q-ODz50)
 * [Redis Enterprise k8s github](https://github.com/RedisLabs/redis-enterprise-k8s-docs)
 * [Redis Enterprise k8s quickstart docs](https://docs.redis.com/latest/kubernetes/deployment/quick-start/)
 * [Redis Enterprise k8s docs](https://docs.redis.com/latest/kubernetes/deployment/)
@@ -65,6 +66,7 @@ will run in separate namespaces in a GKE cluster.
 ## Instructions
 
 ### Run with terraform ansible
+This terraform ansible setup has been tested on an AMD64 mac.  It needs some additional pip installs
 * apply additional pip installs
 ```bash
 pip3 install requests
@@ -72,7 +74,7 @@ pip3 install google-auth
 pip3 install kubernetes
 pip3 install psycopg2
 ```
-I had errors on the last install and need use [this psycopg2 install debug](https://stackoverflow.com/questions/27264574/import-psycopg2-library-not-loaded-libssl-1-0-0-dylib)   
+Troubleshooting on the psycopg2 install.  Use [this psycopg2 install debug](https://stackoverflow.com/questions/27264574/import-psycopg2-library-not-loaded-libssl-1-0-0-dylib)   
 The suggestion that worked for me was this
 ```bash
 pip3 install --global-option=build_ext \
@@ -81,11 +83,23 @@ pip3 install --global-option=build_ext \
 ```
 
 * kick off the terraform creation
+* set the variables in ./terraform/test/main.tf
+  * *NOTE* must do a full git clone of  [redis enterprise k8s](https://github.com/RedisLabs/redis-enterprise-k8s-docs) and set the full path to the bundle.yaml file
+* the gke creation takes a very long time-over 10 minutes
 ```bash
-cd terraform
+cd terraform/test
 terraform init
-terraform apply 
+terraform apply --auto-approve
 ```
+* to remove everything
+```bash
+cd terraform/test
+terraform destroy --auto-approve
+```
+* many errors are just terraform timing issues so can just repeat the apply or destroy and it will work
+* output such as vault keys will be in ./terraform/ansible-gke/temp
+* Can control which terraform pieces are built using the variable in this file
+	terrafrom/ansible-gke/gke-test/vars/main.yml
 
 ### Run manually
 
