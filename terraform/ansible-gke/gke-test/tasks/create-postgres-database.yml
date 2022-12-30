@@ -1,0 +1,28 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: port forward postgres
+  kubernetes.core.k8s_service:
+    state: present
+    name: service/mypostgres
+    namespace: postgres
+    ports:
+    - port: 5432
+      protocol: TCP
+
+- name: Create a new database with name "RedisConnect" 
+  community.postgresql.postgresql_db:
+    name: RedisConnect
+    login_user: postgres
+    login_password: jasonrocks
+
+- name: Run query from SQL script using client encoding for session and positional args
+  community.postgresql.postgresql_script:
+    db: RedisConnect
+    path: ../../postgres/postgres_cdc.sql
+    login_user: postgres
+    login_password: jasonrocks
+    positional_args:
+      - 1

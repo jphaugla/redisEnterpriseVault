@@ -1,0 +1,34 @@
+
+- name: Wait till the vault service is created
+  kubernetes.core.k8s_info:
+    kind: service
+    wait: yes
+    name: vault
+    namespace: vault
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Wait till the vault service is created
+  kubernetes.core.k8s_info:
+    kind: service
+    wait: yes
+    name: vault-agent-injector-svc
+    namespace: vault
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Wait till the vault service is created
+  kubernetes.core.k8s_info:
+    kind: service
+    wait: yes
+    name: vault-internal
+    namespace: vault
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Get deployment services rigger
+  shell: "kubectl wait deployment -n vault vault-agent-injector --for condition=Available=True --timeout=120s"
+
+- name: wait 40 second
+  pause:
+    seconds: 40 

@@ -1,0 +1,4 @@
+- name: Apply redisinsights
+  kubernetes.core.k8s:
+    namespace: demo
+    src: ../../demo/redisinsight.yml

@@ -1,0 +1,22 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: vault unseal
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault operator unseal "{{ lookup('file', 'temp/unseal_keys.txt') }}"
+
+- name: vault login
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault login "{{ lookup('file', 'temp/root_token.txt') }}"
+
+- name: vault status
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault status

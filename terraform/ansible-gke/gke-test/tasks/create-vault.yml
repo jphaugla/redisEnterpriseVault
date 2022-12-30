@@ -1,0 +1,22 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+- name: Create a k8s vault namespace
+  kubernetes.core.k8s:
+    name: vault
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add hashicorp repo
+  kubernetes.core.helm_repository:
+    name: hashicorp
+    repo_url: "https://helm.releases.hashicorp.com"
+
+- name:  install vault from hashicorp repo
+  kubernetes.core.helm:
+    name: vault
+    chart_ref: hashicorp/vault
+    release_namespace: vault
+    values_files: ../../vault/override-values.yaml
