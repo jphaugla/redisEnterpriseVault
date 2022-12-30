@@ -3,11 +3,6 @@
 
 ---
 
-- name: "Setting cluster config variables"
-  set_fact:
-    initial_node_count: 2
-    initial_cluster_version: "1.23"
-
 - name: "Connect to cluster (update kubeconfig)"
   shell: "gcloud container clusters get-credentials {{ cluster_name }} --region {{ gcp_region }} --project {{ gcp_project }}"
   when: cluster_state == "present"
@@ -17,6 +12,21 @@
   when:
     - create_redis
 
+- name: verify cluster created
+  include_tasks: check-redis-ready.yml
+  when:
+    - create_redis
+ 
+- name: get cluster secrets
+  include_tasks: get-rec-secrets.yml
+  when:
+    - create_redis
+ 
+- name: create redisinsights
+  include_tasks: create-redisinsights.yml
+  when:
+    - create_redis
+ 
 - name: Create redis databases
   include_tasks: create-databases.yml
   when:
@@ -32,11 +42,21 @@
   when:
     - create_vault
  
-- name: Unseal vault 
-  include_tasks: unseal-vault.yml
+- name: check vault 
+  include_tasks: check-vault-ready.yml
+  when:
+    - create_vault
+
+- name: vault initialize
+  include_tasks: vault-init.yml
   when:
     - unseal_vault
  
+- name: Unseal vault 
+  include_tasks: vault-unseal.yml
+  when:
+    - unseal_vault
+
 - name: vault plugin copy
   include_tasks: vault-plugin.yml
   when:

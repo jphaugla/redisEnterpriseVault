@@ -1,6 +1,7 @@
-create_redis: True
-create_redis_databases: True
-create_postgres: True
+bootstrap_endpoint: "https://localhost:9443/v1/bootstrap"
+create_redis: False
+create_redis_databases: False
+create_postgres: False
 create_vault: True
 unseal_vault: True
 vault_plugin: True

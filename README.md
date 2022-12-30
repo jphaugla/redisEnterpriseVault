@@ -100,6 +100,7 @@ terraform destroy --auto-approve
 * output such as vault keys will be in ./terraform/ansible-gke/temp
 * Can control which terraform pieces are built using the variable in this file
 	terrafrom/ansible-gke/gke-test/vars/main.yml
+* terraform destroy has issues.  Manual deletion of gke cluster is often needed as destroy fails
 
 ### Run manually
 

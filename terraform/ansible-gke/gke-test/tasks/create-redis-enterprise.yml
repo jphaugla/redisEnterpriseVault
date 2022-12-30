@@ -24,7 +24,7 @@
     wait_sleep: 10
     wait_timeout: 360
 
-- name: Create a Service object from an inline definition
+- name: Create a redis enterprise cluster test-rec
   kubernetes.core.k8s:
     state: present
     definition:
@@ -44,8 +44,3 @@
     namespace: demo
     wait_sleep: 10
     wait_timeout: 360
- 
-- name: Apply redisinsights
-  kubernetes.core.k8s:
-    namespace: demo
-    src: ../../demo/redisinsight.yml
