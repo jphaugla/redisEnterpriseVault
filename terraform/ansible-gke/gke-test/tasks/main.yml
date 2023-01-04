@@ -66,3 +66,13 @@
   include_tasks: vault-write-database.yml
   when:
     - vault_write_database
+ 
+- name: vault auth k8s
+  include_tasks: vault-enable-kubernetes.yml
+  when:
+    - vault_enable_k8s
+ 
+- name: vault write k8s config
+  include_tasks: vault-write-k8s-config.yml
+  when:
+    - vault_write_k8s_config

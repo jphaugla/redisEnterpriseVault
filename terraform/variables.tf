@@ -22,6 +22,14 @@ variable "zone" {
     description = "Zone to be used with the network and resources."
 }
 
-variable "bundle_yaml_location" {
-    description = "The file location for the redis enterprise bundle.yaml file.  Must have full git pull of redis enterprise github containing this yaml"
+variable "redis_enterprise_version" {
+    description = "The redis enterprise operator version.  Can find versions here-https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases"
+}
+
+variable "gke_release_channel" {
+    description = "The gke release channel.  Can be RAPID, REGULAR, or STABLE"
+}
+
+variable "vault_chart_version" {
+    description = "The vault chart version for installing vault using helm.  Version information is here https://developer.hashicorp.com/vault/docs/platform/k8s/helm"
 }
