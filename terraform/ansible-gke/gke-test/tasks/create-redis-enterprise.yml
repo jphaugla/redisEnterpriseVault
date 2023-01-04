@@ -11,9 +11,7 @@
     state: present
 
 - name: Apply bundle.yaml
-  kubernetes.core.k8s:
-    namespace: demo
-    src: "{{ bundle_location }}"
+  shell: "kubectl -n demo apply -f https://raw.githubusercontent.com/RedisLabs/redis-enterprise-k8s-docs/{{redis_enterprise_version}}/bundle.yaml"
 
 - name: Wait till the redis-enterprise-operator is created
   kubernetes.core.k8s_info:

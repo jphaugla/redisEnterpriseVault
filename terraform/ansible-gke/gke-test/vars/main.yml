@@ -1,8 +1,9 @@
-bootstrap_endpoint: "https://localhost:9443/v1/bootstrap"
 create_redis: False
 create_redis_databases: False
 create_postgres: False
-create_vault: True
-unseal_vault: True
+create_vault: False
+download_vault_plugin: False
+vault_initialize: False
+vault_unseal: False
 vault_plugin: True
 vault_write_database: True

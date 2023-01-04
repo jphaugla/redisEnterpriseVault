@@ -1,9 +1,11 @@
 - name: Download vault plugin
   ansible.builtin.get_url:
-    url: https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/releases/download/v0.1.3/vault-plugin-database-redis-enterprise_0.1.3_darwin_amd64
+    url: https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/releases/download/v0.1.3/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
     dest: temp/vault-plugin-database-redis-enterprise_0.1.3_linux_amd64
     mode: '0755'
-
+  when:
+    - download_vault_plugin
+ 
 - name: Copy vault plugin to vault pod
   kubernetes.core.k8s_cp:
     namespace: vault

@@ -18,5 +18,6 @@
   kubernetes.core.helm:
     name: vault
     chart_ref: hashicorp/vault
+    chart_version: "{{ vault_chart_version }}"
     release_namespace: vault
     values_files: ../../vault/override-values.yaml

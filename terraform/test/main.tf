@@ -10,5 +10,7 @@ module "mymodule" {
    region 		= "us-west1"
    cluster_name_final   = "jph-gke"
    zone 		= "us-west1-a"
-   bundle_yaml_location = "/Users/jasonhaugland/gits/redis-enterprise-k8s-docs/bundle.yaml"
+   redis_enterprise_version = "v6.2.18-41"
+   vault_chart_version  = "0.23.0"
+   gke_release_channel  = "STABLE"
 }

@@ -101,6 +101,11 @@ terraform destroy --auto-approve
 * Can control which terraform pieces are built using the variable in this file
 	terrafrom/ansible-gke/gke-test/vars/main.yml
 * terraform destroy has issues.  Manual deletion of gke cluster is often needed as destroy fails
+#### General notes
+There are several locations for paramaters.  
+* The first is in *terraform/test/main.tf*
+* The second is in *terrafrom/ansible-gke/gke-test/vars/main.yml*
+* The other note is that terraform parameters are copied to the ansible environment in *terraform/provisioning.tf*
 
 ### Run manually
 

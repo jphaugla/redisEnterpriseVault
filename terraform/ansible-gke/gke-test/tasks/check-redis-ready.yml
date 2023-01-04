@@ -4,5 +4,9 @@
 - name: Get deployment status redis operator
   shell: "kubectl wait deployment -n demo redis-enterprise-operator --for condition=Available=True --timeout=120s"
 
-- name: Wait for last pod
-  shell: "kubectl wait pod/test-rec-2 -n demo --for condition=ready --timeout=120s"
+- name: Wait for pod0
+  shell: "kubectl wait pod/test-rec-0 -n demo --for condition=ready --timeout=220s"
+- name: Wait for pod1
+  shell: "kubectl wait pod/test-rec-1 -n demo --for condition=ready --timeout=220s"
+- name: Wait for pod2
+  shell: "kubectl wait pod/test-rec-2 -n demo --for condition=ready --timeout=220s"

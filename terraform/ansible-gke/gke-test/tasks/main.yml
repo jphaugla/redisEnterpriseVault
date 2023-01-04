@@ -50,12 +50,12 @@
 - name: vault initialize
   include_tasks: vault-init.yml
   when:
-    - unseal_vault
+    - vault_initialize
  
 - name: Unseal vault 
   include_tasks: vault-unseal.yml
   when:
-    - unseal_vault
+    - vault_unseal
 
 - name: vault plugin copy
   include_tasks: vault-plugin.yml

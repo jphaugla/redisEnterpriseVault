@@ -15,6 +15,9 @@ resource "google_container_cluster" "primary" {
 
   network    = local.vpc_name
   subnetwork = local.vpc_subnet
+  release_channel {
+    channel = var.gke_release_channel
+  }
 }
 
 # Separately Managed Node Pool
