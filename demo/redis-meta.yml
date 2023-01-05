@@ -12,6 +12,9 @@ spec:
   - type: redis-enterprise
     role: "Admin"
     acl: "Full Access"
+  - type: redis-enterprise
+    role: "db2"
+    acl: "Full Access"
   modulesList: 
   - name: timeseries
-    version: 1.6.9
+    version: 1.6.17

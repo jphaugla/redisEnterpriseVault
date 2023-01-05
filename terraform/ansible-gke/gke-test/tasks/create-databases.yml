@@ -2,9 +2,27 @@
 # google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
 
 ---
+- name:
+  kubernetes.core.k8s_exec:
+    namespace: demo
+    pod: test-rec-0
+    command: curl -v -k -u demo@redislabs.com:"{{lookup('file', '../../temp/cluster_pw.txt')}}" -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db1","management":"admin"}'
+  register: curl_out
 
-- name: Apply redisdatabase
+- name:
+  kubernetes.core.k8s_exec:
+    namespace: demo
+    pod: test-rec-0
+    command: curl -v -k -u demo@redislabs.com:"{{lookup('file', '../../temp/cluster_pw.txt')}}" -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db2","management":"admin"}'
+  register: curl_out2
+
+- name: Apply redis enterprise database
   kubernetes.core.k8s:
     namespace: demo
     src: ../../demo/redis-enterprise-database.yml
+
+- name: Apply redis meta database
+  kubernetes.core.k8s:
+    namespace: demo
+    src: ../../demo/redis-meta.yml
 

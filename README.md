@@ -155,15 +155,20 @@ cd $GIT_RE_K8S
 ### Create redis enterprise databases
 * Create two redis enterprise databases.  The first database is the Target database for redis connect and the second stores meta-data for redis-connect
   * If, the redis-meta database doesn't create, it may be the version of the timeseries module as it must fit with the deployed version.  Verify the module version for this redis enterprise version using [the release notes](https://docs.redis.com/latest/rs/release-notes/)
+```
+* get the cluster password for use in the curl command substituting out the 5IcX7yYD with the correct password to create a role 
+```bash
+./getClusterUnPw.sh
+```
 ```bash
 cd $DEMO
+curl -v -k -u demo@redislabs.com:5IcX7yYD -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db1","management":"admin"}'
 kubectl apply -f redis-enterprise-database.yml
 kubectl apply -f redis-meta.yml
 ```
-* Try cluster username and password script as well as databases password and port information scripts
+* get the database password
 ```bash
 ./getDatabasePw.sh
-./getClusterUnPw.sh
 ```
 #### Add Redisinsights 
 These instructions are based on [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
@@ -203,7 +208,7 @@ kubectl port-forward deployment/redisinsight 8001
 ### Install Kubegres
 Based on the instructions so also read these as steps are performed for deeper explanation [Kubegres getting started](https://www.kubegres.io/doc/getting-started.html)
 This creates kubegres, creates a postgres.conf configmap to enable postgres replication, adds postgres database and password, and creates the one node database
-The replication technique with the configmap uses this link  [Override default configs](https://www.kubegres.io/doc/override-default-configs.html)
+The replication technique with the configmap uses this link  [Override default configs](https://www.kubegres.io/doc/override-default-configs.html).  
 ```bash
 cd $POSTGRES
 kubectl apply -f https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
@@ -234,6 +239,7 @@ create database "RedisConnect";
 * Reference both of these links
   * [Set up vault on GKE](https://learn.hashicorp.com/tutorials/vault/kubernetes-google-cloud-gke)
   * [Hashicorp Vault plugin on Redis Enterprise k8s](https://github.com/RedisLabs/vault-plugin-database-redis-enterprise/blob/main/docs/guides/using-the-plugin-on-k8s.md)
+NOTE: The override values being used turns on trace level debug which is great in a test/github setting but should be reduced for production environments.
 ```bash
 cd $VAULT
 kubectl create namespace vault

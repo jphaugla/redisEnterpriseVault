@@ -1,0 +1,16 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: vault auth enable k8s
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault auth enable kubernetes
+
+- name: vault secrets enable k8s
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault secrets enable kubernetes
