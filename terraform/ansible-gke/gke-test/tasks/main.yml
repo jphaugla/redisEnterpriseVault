@@ -37,6 +37,11 @@
   when:
     - create_postgres
  
+- name: Create postgres database
+  include_tasks: create-postgres-database.yml
+  when:
+    - create_postgres_database
+ 
 - name: Create vault 
   include_tasks: create-vault.yml
   when:
@@ -76,3 +81,18 @@
   include_tasks: vault-write-k8s-config.yml
   when:
     - vault_write_k8s_config
+ 
+- name: create redis-connect
+  include_tasks: create-redis-connect.yml
+  when:
+    - create_redis_connect
+ 
+- name: create redis-connect policy
+  include_tasks: redis-connect-policy-role.yml
+  when:
+    - redis_connect_policy_role
+
+- name: start redis connect
+  include_tasks: redis-connect-start.yml
+  when:
+    - start_redis_connect

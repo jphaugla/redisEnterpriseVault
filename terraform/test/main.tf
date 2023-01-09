@@ -13,4 +13,5 @@ module "mymodule" {
    redis_enterprise_version = "v6.2.18-41"
    vault_chart_version  = "0.23.0"
    gke_release_channel  = "STABLE"
+   postgres_pw          = "jasonrocks"
 }

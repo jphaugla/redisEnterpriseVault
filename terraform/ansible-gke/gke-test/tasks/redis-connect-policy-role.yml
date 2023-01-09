@@ -1,0 +1,16 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+- name: create redis vault policy
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault policy write redis-connect-policy ../../vault/vault-redis-connect-policy.hcl
+
+
+- name: create redis connect role
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault write auth/kubernetes/role/redis-connect bound_service_account_names=redis-connect bound_service_account_namespaces=redis-connect policies=redis-connect-policy ttl=24h

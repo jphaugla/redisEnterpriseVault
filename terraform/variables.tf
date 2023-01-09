@@ -33,3 +33,7 @@ variable "gke_release_channel" {
 variable "vault_chart_version" {
     description = "The vault chart version for installing vault using helm.  Version information is here https://developer.hashicorp.com/vault/docs/platform/k8s/helm"
 }
+
+variable "postgres_pw" {
+    description = "the postgres password"
+}

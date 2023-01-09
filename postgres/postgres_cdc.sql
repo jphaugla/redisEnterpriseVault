@@ -1,5 +1,8 @@
 select version();
 
+create database "RedisConnect";
+\c "RedisConnect"
+
 CREATE TABLE IF NOT EXISTS emp (
     empno int NOT NULL,
     fname varchar(50),

@@ -228,8 +228,6 @@ kubectl get pods
 kubectl -n postgres cp postgres_cdc.sql mypostgres-1-0:/
 kubectl -n postgres exec --stdin --tty  mypostgres-1-0 -- /bin/sh
 psql -Upostgres -W
-create database "RedisConnect";
-\c "RedisConnect"
 \i postgres_cdc.sql
 ```
 

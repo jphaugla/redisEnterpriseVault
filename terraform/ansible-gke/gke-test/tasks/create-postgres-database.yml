@@ -3,26 +3,17 @@
 
 ---
 
-- name: port forward postgres
-  kubernetes.core.k8s_service:
-    state: present
-    name: service/mypostgres
+- name: Copy script file to postgres pod
+  kubernetes.core.k8s_cp:
     namespace: postgres
-    ports:
-    - port: 5432
-      protocol: TCP
+    pod: mypostgres-1-0
+    remote_path: /root/postgres_cdc.sql
+    local_path: ../../postgres/postgres_cdc.sql
 
-- name: Create a new database with name "RedisConnect" 
-  community.postgresql.postgresql_db:
-    name: RedisConnect
-    login_user: postgres
-    login_password: jasonrocks
+- name: create databaase
+  kubernetes.core.k8s_exec:
+    namespace: postgres
+    pod: mypostgres-1-0
+    command: psql postgresql://postgres:"{{ postgres_pw }}"@localhost:5432 -f /root/postgres_cdc.sql
+  ignore_errors: true
 
-- name: Run query from SQL script using client encoding for session and positional args
-  community.postgresql.postgresql_script:
-    db: RedisConnect
-    path: ../../postgres/postgres_cdc.sql
-    login_user: postgres
-    login_password: jasonrocks
-    positional_args:
-      - 1

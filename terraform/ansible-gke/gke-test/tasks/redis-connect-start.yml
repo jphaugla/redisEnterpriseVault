@@ -1,0 +1,14 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: create config map
+  kubernetes.core.k8s:
+    namespace: vault
+    src: ../../redis-connect/jobmanager.properties
+
+- name: create redis connect
+  kubernetes.core.k8s:
+    namespace: vault
+    src: ../../redis-connect/vault/reddis-connect-start.yaml
