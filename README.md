@@ -14,6 +14,7 @@ Optional path is included to deploy without Vault.
 - [Technical Overview](#technical-overview)
 - [Instructions](#instructions)
   - [Run with terraform ansible](#run-with-terraform-ansible)
+    - [General notes on terraform/ansible](#general-notes)
   - [Run Manually](#run-manually)
     - [Prepare repository working directories](#prepare-repository-working-directories)
     - [Create GKE cluster](#create-gke-cluster)
@@ -25,6 +26,11 @@ Optional path is included to deploy without Vault.
     - [Redis Connect](#redis-connect-configuration)
       - [Redis Connect with Vault](#redis-connect-with-vault)
       - [Redis Connect without Vault](#redis-connect-without-vault)
+  - [Validate Environment](#validate-environment)
+    - [Validate Redisinsights](#validate-redisinsights)
+    - [Validate Redis Databases](#validate-redis-databases)
+    - [Test Replication](#test-replication)
+  
 - [Debug Ideas](#debug-ideas)
   
 &nbsp;
@@ -182,28 +188,7 @@ The above instructions have two options for installing redisinights, this uses t
 kubectl apply -f redisinsight.yml
 kubectl port-forward deployment/redisinsight 8001
 ```
-* from chrome or firefox, open the browser using http://localhost:8001
-* Click "I already have a database"
-* Click "Connect to Redis Database"
-* Create Connection to target redis database with following parameter entries
-
-| Key      | Value                                     |
-|----------|-------------------------------------------|
-| host     | redis-enterprise-database.demo            |
-| port     | 18154 (get from ./getDatabasepw.sh above) |
-| name     | TargetDB                                  |
-| Username | (leave blank)                             |
-| Password | DrCh7J31 (from ./getDatabasepw.sh above) |
-* click ok
-*repeat steps above for metadata database using following parameters
-
-| Key      | Value                                     |
-|----------|-------------------------------------------|
-| host     | redis-meta.demo                           |
-| port     | 15871 (get from ./getDatabasepw.sh above) |
-| name     | metaDB                                    |
-| Username | (leave blank)                             |
-| Password | FW2mFXEH (from ./getDatabasepw.sh above)  |
+* Can validate redisinsights using - [Validate Redisinsights](#validate-redisinsights)
 
 ### Install Kubegres
 Based on the instructions so also read these as steps are performed for deeper explanation [Kubegres getting started](https://www.kubegres.io/doc/getting-started.html)
@@ -299,52 +284,8 @@ vault write database/config/demo-test-rec-redis-meta plugin_name="redisenterpris
 vault write database/roles/redis-enterprise-database db_name=demo-test-rec-redis-enterprise-database creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
 vault write database/roles/redis-meta db_name=demo-test-rec-redis-meta creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
 ```
-#### test the database connections
-Using the information from getDatabasePw.sh above.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
-Grab another new terminal window to runt the port forward command.  (note, need the actual port from getDatabasePw.sh)
 
-```bash
-kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
-kubectl port-forward -n demo service/redis-meta 16254:16254
-```
-NOTES:  
-* the redis-cli command is using the username and password from the output of the read database command
-* the vault read command must be done from the vault terminal 
-  * can log in to the vault container using  ```kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh```
-* From vault for redis-enterprise-database
-```bash
-
-vault read database/creds/redis-enterprise-database
-      Key                Value
-      ---                -----
-      lease_id           database/creds/redis-enterprise-database/JVsEvOrtZfK46dMO7GWRxjTW
-      lease_duration     90m
-      lease_renewable    true
-      password           blZxlE10AS-zy-UBbjdh
-      username           v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982
-```
-* From vault for redis-meta 
-```bash
-vault read database/creds/redis-meta
-      Key                Value
-      ---                -----
-      lease_id           database/creds/redis-meta/iahGKJ9XNkisGsyLgW89Ohpt
-      lease_duration     90m
-      lease_renewable    true
-      password           Vfo2ajqBvWAVKFyI-ojR
-      username           v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445
-```
-Open a new terminal window  and test each database using the username and password values from the vault read database output
-* redis-enterprise-database
-```bash
-redis-cli -p 18154
->AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
-```
-* redis-meta
-```bash
-redis-cli -p 16254
->AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
-```
+* Can validate the redis database at this point using  - [Validate Redis Databases](#validate-redis-databases)
 
 #### Authorize kubernetes
 * using vault terminal connection...   
@@ -435,6 +376,82 @@ kubectl create configmap redis-connect-config \
 kubectl apply -f non-vault/redis-connect-start.yaml
 ```
 
+## Validate  Environment
+### Validate redisinsights
+
+* from chrome or firefox, open the browser using http://localhost:8001
+* Click "I already have a database"
+* Click "Connect to Redis Database"
+* Create Connection to target redis database with following parameter entries
+
+| Key      | Value                                     |
+|----------|-------------------------------------------|
+| host     | redis-enterprise-database.demo            |
+| port     | 18154 (get from ./getDatabasepw.sh above) |
+| name     | TargetDB                                  |
+| Username | (leave blank)                             |
+| Password | DrCh7J31 (from ./getDatabasepw.sh above) |
+* click ok
+*repeat steps above for metadata database using following parameters
+
+| Key      | Value                                     |
+|----------|-------------------------------------------|
+| host     | redis-meta.demo                           |
+| port     | 15871 (get from ./getDatabasepw.sh above) |
+| name     | metaDB                                    |
+| Username | (leave blank)                             |
+| Password | FW2mFXEH (from ./getDatabasepw.sh above)  |
+
+### Validate redis databases
+
+Using the information from getDatabasePw.sh.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
+Grab another new terminal window to runt the port forward command.  (note, need the actual port from getDatabasePw.sh)
+
+```bash
+$DEMO/getDatabasePw.sh
+kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
+kubectl port-forward -n demo service/redis-meta 16254:16254
+```
+
+NOTES:  
+* the redis-cli command is using the username and password from the output of the read database command
+* the vault read command must be done from the vault terminal 
+  * can log in to the vault container using  ```kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh```
+* From vault for redis-enterprise-database
+
+```bash
+
+vault read database/creds/redis-enterprise-database
+      Key                Value
+      ---                -----
+      lease_id           database/creds/redis-enterprise-database/JVsEvOrtZfK46dMO7GWRxjTW
+      lease_duration     90m
+      lease_renewable    true
+      password           blZxlE10AS-zy-UBbjdh
+      username           v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982
+```
+* From vault for redis-meta 
+```bash
+vault read database/creds/redis-meta
+      Key                Value
+      ---                -----
+      lease_id           database/creds/redis-meta/iahGKJ9XNkisGsyLgW89Ohpt
+      lease_duration     90m
+      lease_renewable    true
+      password           Vfo2ajqBvWAVKFyI-ojR
+      username           v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445
+```
+Open a new terminal window  and test each database using the username and password values from the vault read database output
+* redis-enterprise-database
+```bash
+redis-cli -p 18154
+>AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
+```
+* redis-meta
+```bash
+redis-cli -p 16254
+>AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
+```
 
 ### Test replication
 This section will define the redis-connect job using an API approach.  For more detail on the redis-connect swagger interface, see this
