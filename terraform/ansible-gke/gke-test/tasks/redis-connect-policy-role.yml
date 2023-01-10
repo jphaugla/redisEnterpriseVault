@@ -2,11 +2,18 @@
 # google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
 
 ---
+- name: Copy script file to vault pod
+  kubernetes.core.k8s_cp:
+    namespace: vault
+    pod: vault-0
+    remote_path: /home/vault/vault-redis-connect-policy.hcl
+    local_path: ../../vault/vault-redis-connect-policy.hcl
+
 - name: create redis vault policy
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault policy write redis-connect-policy ../../vault/vault-redis-connect-policy.hcl
+    command: vault policy write redis-connect-policy /home/vault/vault-redis-connect-policy.hcl
 
 
 - name: create redis connect role

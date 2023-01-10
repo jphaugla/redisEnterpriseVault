@@ -12,7 +12,7 @@
 - name: Create a k8s redis-connect service account
   kubernetes.core.k8s:
     name: redis-connect
-    namespace: vault
+    namespace: redis-connect
     api_version: v1
     kind: sa
     state: present
@@ -20,15 +20,27 @@
 - name: output postgres password
   debug: var=postgres_pw
 
-- name: create redis connect config
+- name: create postgres connect config
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
     command: vault write database/config/kube-postgres  plugin_name=postgresql-database-plugin allowed_roles="redis-connect" username="postgres" password="{{postgres_pw}}" connection_url="postgresql://postgres:{{postgres_pw}}@mypostgres.postgres.svc:5432/RedisConnect?sslmode=disable"
 
+- name: Copy script file to vault pod
+  kubernetes.core.k8s_cp:
+    namespace: vault
+    pod: vault-0
+    remote_path: /home/vault/postgres-database-role.sh
+    local_path: ../../vault/postgres-database-role.sh
 
-- name: create redis connect role
+- name: vault chmod
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault write database/roles/redis-connect "{{ lookup('template','../template/create_role.json.j2') }}" 
+    command: chmod 755 /home/vault/postgres-database-role.sh
+
+- name: create postgres connect role
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: /bin/sh -c /home/vault/postgres-database-role.sh

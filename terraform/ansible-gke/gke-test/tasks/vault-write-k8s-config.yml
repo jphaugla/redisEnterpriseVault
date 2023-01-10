@@ -1,15 +1,22 @@
 # google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
 # google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
 
+- name: Copy script file to vault pod
+  kubernetes.core.k8s_cp:
+    namespace: vault
+    pod: vault-0
+    remote_path: /home/vault/vault-authorize-k8s.sh
+    local_path: ../../vault/vvault-authorize-k8s.sh
+
 - name: vault write k8s config
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: cat /var/run/secrets/kubernetes.io/serviceaccount/token
+    command: chmod 755 /home/vault/vault-authorize-k8s.sh
   register: return_it
 
 - name: vault write k8s config
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault write auth/kubernetes/config token_reviewer_jwt="{{ return_it.stdout }}" kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    command:  /home/vault/vault-authorize-k8s.sh

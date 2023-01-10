@@ -1,6 +1,7 @@
 create_redis: True
 create_redis_databases: True
 create_postgres: True
+create_postgres_database: True
 create_vault: True
 download_vault_plugin: True
 vault_initialize: True
@@ -9,3 +10,6 @@ vault_plugin: True
 vault_write_database: True
 vault_enable_k8s: True
 vault_write_k8s_config: True
+create_redis_connect: True
+redis_connect_policy_role: True
+start_redis_connect: True

@@ -5,3 +5,22 @@
     namespace: vault
     pod: vault-0
     command: vault write database/config/demo-test-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username=demo@redislabs.com password="{{ lookup('ansible.builtin.file', 'temp/cluster_pw.txt') }}"
+
+
+- name: vault write meta database config
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault write database/config/demo-test-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-meta username=demo@redislabs.com password="{{ lookup('ansible.builtin.file', 'temp/cluster_pw.txt') }}"
+
+- name: create redis  database role
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault write database/roles/redis-enterprise-database db_name=demo-test-rec-redis-enterprise-database creation_statements="{\"role\":\"db1\"}" default_ttl=90m max_ttl=100m
+
+- name: create redis  database role
+  kubernetes.core.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: vault write database/roles/redis-meta db_name=demo-test-rec-redis-meta creation_statements="{\"role\":\"db2\"}" default_ttl=90m max_ttl=100m

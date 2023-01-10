@@ -5,10 +5,10 @@
 
 - name: create config map
   kubernetes.core.k8s:
-    namespace: vault
-    src: ../../redis-connect/jobmanager.properties
+    namespace: redis-connect
+    src: ../../redis-connect/redis-connect-config.yml
 
 - name: create redis connect
   kubernetes.core.k8s:
-    namespace: vault
-    src: ../../redis-connect/vault/reddis-connect-start.yaml
+    namespace: redis-connect
+    src: ../../redis-connect/vault/redis-connect-start.yaml
