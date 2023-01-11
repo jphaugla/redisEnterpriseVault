@@ -5,6 +5,7 @@ metadata:
 spec:
   memorySize: 500MB
   persistence: "snapshotEvery1Hour"
+  databasePort: 12000
   rolesPermissions:
   - type: redis-enterprise
     role: "Admin"

@@ -90,7 +90,6 @@ pip3 install --global-option=build_ext \
 
 * kick off the terraform creation
 * set the variables in ./terraform/test/main.tf
-  * *NOTE* must do a full git clone of  [redis enterprise k8s](https://github.com/RedisLabs/redis-enterprise-k8s-docs) and set the full path to the bundle.yaml file
 * the gke creation takes a very long time-over 10 minutes
 ```bash
 cd terraform/test
@@ -111,6 +110,11 @@ terraform destroy --auto-approve
 There are several locations for paramaters.  
 * The first is in *terraform/test/main.tf*
 * The second is in *terrafrom/ansible-gke/gke-test/vars/main.yml*
+  * The parameters in vars/main.yml control which tasks run
+  * By manipulating these parameters certain parts of the ansible can be run leaving other parts intact
+  * Combine the use of parameters with the deletion of a namespace can selectively rebuild part a namespace
+  * `kubectl delete namespace vault`  and `kubectl delete namespace redis-connect` work very well
+  * after deleting the namespace, set all the variables in vars/main.yml to False except for the task rebuilding the deleted namespace
 * The other note is that terraform parameters are copied to the ansible environment in *terraform/provisioning.tf*
 
 ### Run manually
@@ -159,16 +163,19 @@ cd $GIT_RE_K8S
 * Follow [Redis Enterprise k8s installation instructions](https://docs.redis.com/latest/kubernetes/deployment/quick-start/) using *demo* as the namespace.  Stop before the step to *Enable the Admission Controller".  This step is not needed
 
 ### Create redis enterprise databases
+* A separate role is created for each database.  This is *VERY IMPORTANT* for effectively using the plugin.  Each database needs a separate role only for that database.  If a common role is used across all databases in a large cluster, the performance aspect can be very significant, 
 * Create two redis enterprise databases.  The first database is the Target database for redis connect and the second stores meta-data for redis-connect
   * If, the redis-meta database doesn't create, it may be the version of the timeseries module as it must fit with the deployed version.  Verify the module version for this redis enterprise version using [the release notes](https://docs.redis.com/latest/rs/release-notes/)
 ```
 * get the cluster password for use in the curl command substituting out the 5IcX7yYD with the correct password to create a role 
+* the ports are hardcoded in the yaml files for each database, redis-enterprise-database is 12000 and redis-meta is 120001
 ```bash
 ./getClusterUnPw.sh
 ```
 ```bash
 cd $DEMO
 curl -v -k -u demo@redislabs.com:5IcX7yYD -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db1","management":"admin"}'
+curl -v -k -u demo@redislabs.com:5IcX7yYD -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db2","management":"admin"}'
 kubectl apply -f redis-enterprise-database.yml
 kubectl apply -f redis-meta.yml
 ```
@@ -196,7 +203,7 @@ This creates kubegres, creates a postgres.conf configmap to enable postgres repl
 The replication technique with the configmap uses this link  [Override default configs](https://www.kubegres.io/doc/override-default-configs.html).  
 ```bash
 cd $POSTGRES
-kubectl apply -f https://raw.githubusercontent.com/reactive-tech/kubegres/v1.15/kubegres.yaml
+kubectl apply -f https://raw.githubusercontent.com/reactive-tech/kubegres/v1.16/kubegres.yaml
 kubectl create namespace postgres
 kubectl config set-context --current --namespace=postgres
 kubectl apply -f postgres-conf-override.yaml
@@ -280,9 +287,10 @@ vault write database/config/demo-test-rec-redis-enterprise-database plugin_name=
 vault write database/config/demo-test-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-meta username=demo@redislabs.com password=vubYurxK
 ```
 #### Create database roles
+* as mentioned above, is important each database uses its own role here for creating the dynamic usernames.  Sharing one role in the cluster across databases can cause performance problems.
 ```bash
-vault write database/roles/redis-enterprise-database db_name=demo-test-rec-redis-enterprise-database creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
-vault write database/roles/redis-meta db_name=demo-test-rec-redis-meta creation_statements="{\"role\":\"Admin\"}" default_ttl=90m max_ttl=100m
+vault write database/roles/redis-enterprise-database db_name=demo-test-rec-redis-enterprise-database creation_statements="{\"role\":\"db1\"}" default_ttl=90m max_ttl=100m
+vault write database/roles/redis-meta db_name=demo-test-rec-redis-meta creation_statements="{\"role\":\"db2\"}" default_ttl=90m max_ttl=100m
 ```
 
 * Can validate the redis database at this point using  - [Validate Redis Databases](#validate-redis-databases)
@@ -303,9 +311,9 @@ kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 * create service account and namespace
 ```bash
 cd $REDIS_CONNECT
-kubectl create sa redis-connect
 kubectl create namespace redis-connect
 kubectl config set-context --current --namespace=redis-connect
+kubectl create sa redis-connect
 ```
 #### Redis Connect With Vault
 not needed if not doing vault (skip to [Redis Connect Without Vault](#redis-connect-without-vault))
@@ -345,8 +353,6 @@ vault write auth/kubernetes/role/redis-connect \
     policies=redis-connect-policy \
     ttl=24h
 ```
-* Edit the jobmanager.properties file for the correct connection parameters in redis.connection.url
-  * these parameters can be retrieved using ```$DEMO/getDatabasePw.sh```
 * create configmap with jobmanager.properties
   * this configmap is used in the redis-connect-start.yaml to mount files appropriately
 * start the redis-connect server
@@ -355,6 +361,7 @@ $DEMO/getDatabasePw.sh
 vi jobmanager.properties
 kubectl create configmap redis-connect-config \
   --from-file=jobmanager.properties=jobmanager.properties 
+  --from-file=logback.xml=logback.xml 
 kubectl apply -f vault/redis-connect-start.yaml
 ```
 #### Redis Connect Without Vault
@@ -387,7 +394,7 @@ kubectl apply -f non-vault/redis-connect-start.yaml
 | Key      | Value                                     |
 |----------|-------------------------------------------|
 | host     | redis-enterprise-database.demo            |
-| port     | 18154 (get from ./getDatabasepw.sh above) |
+| port     | 12000 (can get from ./getDatabasepw.sh but is hardcoded) |
 | name     | TargetDB                                  |
 | Username | (leave blank)                             |
 | Password | DrCh7J31 (from ./getDatabasepw.sh above) |
@@ -397,7 +404,7 @@ kubectl apply -f non-vault/redis-connect-start.yaml
 | Key      | Value                                     |
 |----------|-------------------------------------------|
 | host     | redis-meta.demo                           |
-| port     | 15871 (get from ./getDatabasepw.sh above) |
+| port     | 12001 (can get from ./getDatabasepw.sh but is hardcoded) |
 | name     | metaDB                                    |
 | Username | (leave blank)                             |
 | Password | FW2mFXEH (from ./getDatabasepw.sh above)  |
@@ -409,8 +416,8 @@ Grab another new terminal window to runt the port forward command.  (note, need 
 
 ```bash
 $DEMO/getDatabasePw.sh
-kubectl port-forward -n demo service/redis-enterprise-database 18154:18154
-kubectl port-forward -n demo service/redis-meta 16254:16254
+kubectl port-forward -n demo service/redis-enterprise-database 12000:12000
+kubectl port-forward -n demo service/redis-meta 112001:12001
 ```
 
 NOTES:  

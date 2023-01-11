@@ -6,7 +6,7 @@
     namespace: vault
     pod: vault-0
     remote_path: /home/vault/vault-authorize-k8s.sh
-    local_path: ../../vault/vvault-authorize-k8s.sh
+    local_path: ../../vault/vault-authorize-k8s.sh
 
 - name: vault write k8s config
   kubernetes.core.k8s_exec:
@@ -19,4 +19,4 @@
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command:  /home/vault/vault-authorize-k8s.sh
+    command:  /bin/sh -c /home/vault/vault-authorize-k8s.sh
