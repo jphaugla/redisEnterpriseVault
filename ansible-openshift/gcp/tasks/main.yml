@@ -1,0 +1,19 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: Install open shift to laptop
+  include_tasks: install-openshift-tools.yml
+  when:
+    - install_openshift
+
+- name: 
+  include_tasks: create-install-config.yml
+  when:
+    - create_install_config
+
+- name: 
+  include_tasks: install-openshift-cluster.yml
+  when:
+    - install_openshift_cluster

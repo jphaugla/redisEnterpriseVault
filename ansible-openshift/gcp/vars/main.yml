@@ -1,0 +1,21 @@
+install_openshift: False
+create_install_config: True
+install_openshift_cluster: False
+
+cluster_name: jph-openshift  
+gcp_region: us-central1-c
+gcp_project: central-beach-194106
+openshift_installer_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
+openshift_version: 4.11.3
+worker_machine_type: e2-standard-8
+master_machine_type: e2-standard-4
+worker_replicas: 3
+master_replicas: 3
+cluster_cidr: 10.128.0.0/14
+machine_cidr: 10.0.0.0/16
+service_cidr: 172.30.0.0/16
+openshift_pull_secret_file: /Users/jasonhaugland/.openshift/pull_secret.txt
+gcp_public_dns_zone_name: openshift.demo.redislabs.com
+gcp_service_account: /Users/jasonhaugland/.gcp/bb-gcp-terraform.json
+GOOGLE_APPLICATION_CREDENTIALS: "{{ gcp_service_account }}"
+ssh_key_file: /Users/jasonhaugland/.ssh/google_compute_engine.pub

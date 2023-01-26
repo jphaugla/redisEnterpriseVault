@@ -1,0 +1,38 @@
+apiVersion: v1
+baseDomain: openshift.demo.redislabs.com
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform:
+    gcp:
+      type: {{ worker_machine_type }}
+  replicas: {{ worker_replicas }}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform:
+    gcp:
+      type: {{ master_machine_type }}
+  replicas: {{ master_replicas }}
+metadata:
+  creationTimestamp: null
+  name: {{ cluster_name }}
+networking:
+  clusterNetwork:
+  - cidr: {{ cluster_cidr }}
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: {{ machine_cidr }}
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - {{ service_cidr }}
+platform:
+  gcp:
+    projectID: {{ gcp_project }}
+    region: {{ gcp_region }}
+publish: External
+pullSecret: '{{ lookup('file', openshift_pull_secret_file) }}'
+sshKey: |
+  {{ lookup('file', ssh_key_file) }}

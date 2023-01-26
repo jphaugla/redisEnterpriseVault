@@ -1,0 +1,24 @@
+# Run me: ansible-playbook -vv --extra-vars cluster_state=[absent|present] playbook.yml
+# Reference: https://docs.ansible.com/ansible/latest/scenario_guides/guide_gce.html
+
+---
+
+- name: Create Openshift cluster
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    gcp_project: central-beach-194106
+    openshift_installer_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/ 
+    openshift_version: 4.11.3
+    cluster_name: jph-openshift
+    gcp_cred_kind: serviceaccount
+    gcp_cred_file: /Users/jasonhaugland/.gcp/bb-gcp-terraform.json
+    gcp_zone: us-central1-a
+    gcp_region: us-central1
+    openshift_pull_secret: /Users/jasonhaugland/.openshift/pull_secret.txt
+    network: jph-gke-network
+    subnet: jph-gke-subnet
+
+  roles:
+    - gcp
