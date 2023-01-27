@@ -29,6 +29,6 @@
 - name: Get deployment services rigger
   shell: "kubectl wait deployment -n vault vault-agent-injector --for condition=Available=True --timeout=120s"
 
-- name: wait 40 second
+- name: wait 60 second
   pause:
-    seconds: 40 
+    seconds: 60 

@@ -1,12 +1,12 @@
-gke: True
-create_redis_gke: True
-create_redis_openshift: False
+gke: False
+create_redis_gke: False
+create_redis_openshift: True
 create_redis: True
 create_redis_databases: True
 create_postgres: True
 create_postgres_database: True
-create_vault: True
-create_vault_openshift: False
+create_vault: False
+create_vault_openshift: True
 download_vault_plugin: True
 vault_initialize: True
 vault_unseal: True

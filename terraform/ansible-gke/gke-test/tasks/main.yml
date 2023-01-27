@@ -3,14 +3,20 @@
 
 ---
 
-- name: "Connect to cluster (update kubeconfig)"
+- name: "Connect to gke cluster (update kubeconfig)"
   shell: "gcloud container clusters get-credentials {{ cluster_name }} --region {{ gcp_region }} --project {{ gcp_project }}"
-  when: cluster_state == "present"
+  when: 
+    - gke
 
-- name: Create redis-enterprise cluster
+- name: Create redis-enterprise cluster gke
   include_tasks: create-redis-enterprise.yml
   when:
-    - create_redis
+    - create_redis_gke
+
+- name: Create redis-enterprise cluster openshift
+  include_tasks: create-redis-enterprise-openshift.yml
+  when:
+    - create_redis_openshift
 
 - name: verify cluster created
   include_tasks: check-redis-ready.yml
@@ -43,9 +49,9 @@
     - create_postgres_database
  
 - name: Create vault 
-  include_tasks: create-vault.yml
+  include_tasks: create-vault-openshift.yml
   when:
-    - create_vault
+    - create_vault_openshift
  
 - name: check vault 
   include_tasks: check-vault-ready.yml

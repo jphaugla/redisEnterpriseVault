@@ -1,0 +1,1 @@
+ansible-playbook  -vv --extra-vars cluster_state=present playbook.yml -e 'cluster_name=jph-gke'  -e 'gcp_region=us-central1-c' -e 'gcp_project=central-beach-194106' -e 'ansible_python_interpreter=/usr/local/bin/python3' -e 'gke=True' -e 'vault_chart_version=0.23.0' -e 'postgres_pw=jasonrocks'  -e 'redis_enterprise_version=v6.2.18-41 -e 'gke_release_channel=STABLE'

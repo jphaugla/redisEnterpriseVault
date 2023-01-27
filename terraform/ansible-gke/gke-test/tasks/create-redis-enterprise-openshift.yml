@@ -3,15 +3,24 @@
 
 ---
 
-- name: Create a k8s namespace
-  kubernetes.core.k8s:
-    name: demo
-    api_version: v1
-    kind: Namespace
-    state: present
+- name: Create an openshift project
+  shell: "{{ oc_path }} new-project demo"
+  ignore_errors: True
 
-- name: Apply bundle.yaml
-  shell: "kubectl -n demo apply -f https://raw.githubusercontent.com/RedisLabs/redis-enterprise-k8s-docs/{{redis_enterprise_version}}/bundle.yaml"
+- name: Verify using demo
+  shell: "{{ oc_path }} project demo"
+
+- name: Apply scc.yaml file
+  shell: "{{ oc_path }} apply -f {{ redis_enterprise_github }}/openshift/scc.yaml"
+
+- name: add operator permission for operator
+  shell: "{{ oc_path }} adm policy add-scc-to-user redis-enterprise-scc system:serviceaccount:demo:redis-enterprise-operator"
+
+- name: add operator permission for rec
+  shell: "{{ oc_path }} adm policy add-scc-to-user redis-enterprise-scc system:serviceaccount:demo:test-rec"
+
+- name: Apply bundle
+  shell: "{{ oc_path }} apply -f {{ redis_enterprise_github }}/openshift.bundle.yaml"
 
 - name: wait 10 second
   pause:

@@ -7,13 +7,13 @@
   kubernetes.core.k8s_cp:
     namespace: postgres
     pod: mypostgres-1-0
-    remote_path: /root/postgres_cdc.sql
+    remote_path: /tmp/postgres_cdc.sql
     local_path: ../../postgres/postgres_cdc.sql
 
 - name: create databaase
   kubernetes.core.k8s_exec:
     namespace: postgres
     pod: mypostgres-1-0
-    command: psql postgresql://postgres:"{{ postgres_pw }}"@localhost:5432 -f /root/postgres_cdc.sql
+    command: psql postgresql://postgres:{{ postgres_pw }}@localhost:5432 -f /tmp/postgres_cdc.sql
   ignore_errors: true
 
