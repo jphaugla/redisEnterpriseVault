@@ -1,6 +1,6 @@
-install_openshift: False
+install_openshift: True
 create_install_config: True
-install_openshift_cluster: False
+install_openshift_cluster: True
 
 cluster_name: jph-openshift  
 gcp_region: us-central1-c

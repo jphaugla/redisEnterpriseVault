@@ -13,11 +13,14 @@ Optional path is included to deploy without Vault.
 - [Important Links](#important-links)
 - [Technical Overview](#technical-overview)
 - [Instructions](#instructions)
-  - [Run with terraform ansible](#run-with-terraform-ansible)
+- - [GKE Automated Instructions](#gke-automated-instructions)
     - [General notes on terraform/ansible](#general-notes)
+  - [OpenShift Automated Instructions](#openshift-automated-instructions)
   - [Run Manually](#run-manually)
     - [Prepare repository working directories](#prepare-repository-working-directories)
-    - [Create GKE cluster](#create-gke-cluster)
+    - [Choose GKE or OpenShift](#choose-gke-or-openshift)
+      - [Create GKE cluster](#create-gke-cluster)
+      - [Create OpenShift cluster](#create-openshift-cluster)
     - [Install Redis Enterprise k8s](#install-redis-enterprise-k8s)
     - [Create Redis Enterprise Databases](#create-redis-enterprise-databases)
     - [Add Redisinsights](#add-redisinsights)
@@ -54,10 +57,13 @@ will run in separate namespaces in a GKE cluster.
 * [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 * [Install RedisInsights on k8s](https://docs.redis.com/latest/ri/installing/install-k8s/)
 * [Vault k8 injector](https://www.vaultproject.io/docs/platform/k8s/injector)
+* [Using Jinja2 Template in Ansible](https://www.linuxtechi.com/configure-use-ansible-jinja2-templates/)
+* [Installing OpenShift on GCP](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
 
 ## Technical Overview
 
-* Follow the instructions using link above to "Set up vault on GKE"
+* Can use terraform/ansible automation to do complete automated install and configuration of this environment
+* Or, follow the instructions using link above to "Set up vault on GKE" or "Installing OpenShift on GCP"
 * Install Redis Enterprise on k8s using "Redis Enterprise k8s" link
 * Set up Postgresql using Kubegres
 * If using Vault, Setup Vault and "Hashicorp Vault plugin on Redis Enterprise k8s"
@@ -70,8 +76,20 @@ will run in separate namespaces in a GKE cluster.
 &nbsp;
 
 ## Instructions
+***IMPORTANT NOTE**: Creating this demo application in your GCP account will create and consume GCP resources, which **will cost money**.
 
-### Run with terraform ansible
+### GKE or OpenShift
+Instructions and automation is available in this GitHub for both OpenShift (on GCP) and GKE engines.
+GKE automation relies on terraform/ansible whereas OpenShift automation only uses ansible.  Regardless of OpenShift or
+GKE, carefully set the task parameters to run the desired steps.  Template set of parameters are available for 
+running each version.  
+* [Template variable set up to run Openshift](terraform/ansible-gke/gke-test/vars/main.yml.openshift)
+* [Template variable set up to run GKE](terraform/ansible-gke/gke-test/vars/main.yml.gke)
+* [Make changes in this file to choose what to tasks to run](terraform/ansible-gke/gke-test/vars/main.yml)
+
+This parameter file is used by the [driving *main* ansible task](terraform/ansible-gke/gke-test/tasks/main.yml) to determine the ansible tasks to run
+
+### GKE Automated Instructions
 This terraform ansible setup has been tested on an AMD64 mac.  It needs some additional pip installs
 * apply additional pip installs
 ```bash
@@ -88,9 +106,8 @@ pip3 install --global-option=build_ext \
             --global-option="-L/usr/local/opt/openssl/lib" psycopg2
 ```
 
-* kick off the terraform creation
-* set the variables in ./terraform/test/main.tf
-* the gke creation takes a very long time-over 10 minutes
+* set the variables in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
+* kick off the terraform creation-the gke creation takes a very long time-over 10 minutes
 ```bash
 cd terraform/test
 terraform init
@@ -104,22 +121,39 @@ terraform destroy --auto-approve
 * many errors are just terraform timing issues so can just repeat the apply or destroy and it will work
 * output such as vault keys will be in ./terraform/ansible-gke/temp
 * Can control which terraform pieces are built using the variable in this file
-	terrafrom/ansible-gke/gke-test/vars/main.yml
+	terraform/ansible-gke/gke-test/vars/main.yml
 * terraform destroy has issues.  Manual deletion of gke cluster is often needed as destroy fails
 #### General notes
-There are several locations for paramaters.  
-* The first is in *terraform/test/main.tf*
-* The second is in *terrafrom/ansible-gke/gke-test/vars/main.yml*
+There are several locations for parameters.  
+* The first is in *terraform/test/main.tf*  This is only for GKE
+* The second is in *terrafrom/ansible-gke/gke-test/vars/main.yml*  This is for both GKE and OpenShift
   * The parameters in vars/main.yml control which tasks run
   * By manipulating these parameters certain parts of the ansible can be run leaving other parts intact
   * Combine the use of parameters with the deletion of a namespace can selectively rebuild part a namespace
   * `kubectl delete namespace vault`  and `kubectl delete namespace redis-connect` work very well
   * after deleting the namespace, set all the variables in vars/main.yml to False except for the task rebuilding the deleted namespace
-* The other note is that terraform parameters are copied to the ansible environment in *terraform/provisioning.tf*
+* terraform parameters are copied to the ansible environment in *terraform/provisioning.tf*
+* Even if no changes are needed to the GKE cluster, the ansible deployment is kicked off by the terraform script.
+
+
+### OpenShift Automated Instructions
+OpenShift only uses ansible because the actual installation of the OpenShift cluster is automated by Openshift (using terraform internally) by install client software and using these 
+this client to automate the install on GCP.   For simplicity, this GitHub automates this installation using ansible.  Following the use of ansible to install OpenShift, 
+the same ansible as is used in the GCK automation of the Redis Enterprise, PostgreSQL, Hashicorp Vault, and Redis Connect is also used with OpenShift.
+There are a few minor differences but parametrization takes care of those differences.
+
+#### Run ansible OpenShift script
+* Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
+  * NOTE: there is a template setup for [openshift](terraform/ansible-gke/gke-test/vars/main.yml.openshift)
+* Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
+* Kick off the ansible script
+
+```bash
+cd  terraform/ansible-gke
+./manual_run_openshift.sh
+```
 
 ### Run manually
-
-***IMPORTANT NOTE**: Creating this demo application in your GCP account will create and consume GCP resources, which **will cost money**.
 
 &nbsp;
 
@@ -142,7 +176,8 @@ cd redisEnterpriseVault
 source setEnvironment.sh
 
 ```
-### Create GKE cluster 
+### Choose GKE or OpenShift
+#### Create GKE cluster 
 
 Tips on installing GKE
 * Easier to use GCP console to get the desired node size.
@@ -154,6 +189,9 @@ Tips on installing GKE
     * Click to connect to the cluster
 ![Connect to Cluster](images/ConnectToCluster.png)
     * Follow the command-line access instructions to prepare for the subsequent steps
+
+#### Create OpenShift cluster
+* [Installing OpenShift on GCP](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
 
 ### Install Redis Enterprise k8s
 * Get to redis enterprise k8s docs directory

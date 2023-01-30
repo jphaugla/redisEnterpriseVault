@@ -1,3 +1,4 @@
+# gke true/false flag
 gke: True
 create_redis_gke: True
 create_redis_openshift: False
