@@ -29,7 +29,7 @@ Optional path is included to deploy without Vault.
     - [Redis Connect](#redis-connect-configuration)
       - [Redis Connect with Vault](#redis-connect-with-vault)
       - [Redis Connect without Vault](#redis-connect-without-vault)
-  - [Validate Environment](#validate-environment)
+  - [Validate Environment](#validate--environment)
     - [Validate Redisinsights](#validate-redisinsights)
     - [Validate Redis Databases](#validate-redis-databases)
     - [Test Replication](#test-replication)
@@ -59,6 +59,7 @@ will run in separate namespaces in a GKE cluster.
 * [Vault k8 injector](https://www.vaultproject.io/docs/platform/k8s/injector)
 * [Using Jinja2 Template in Ansible](https://www.linuxtechi.com/configure-use-ansible-jinja2-templates/)
 * [Installing OpenShift on GCP](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
+* [Deploy Redis Enterprise with OpenShift CLI](https://docs.redis.com/latest/kubernetes/deployment/openshift/openshift-cli/e
 
 ## Technical Overview
 
@@ -198,8 +199,8 @@ Tips on installing GKE
 ```bash
 cd $GIT_RE_K8S
 ```
-* Follow [Redis Enterprise k8s installation instructions](https://docs.redis.com/latest/kubernetes/deployment/quick-start/) using *demo* as the namespace.  Stop before the step to *Enable the Admission Controller".  This step is not needed
-
+* For GKE, follow [Redis Enterprise k8s installation instructions](https://docs.redis.com/latest/kubernetes/deployment/quick-start/) using *demo* as the namespace.  Stop before the step to *Enable the Admission Controller".  This step is not needed
+* For OpenShift, follow [Redis Enterprise deployment with OpensShift)(https://docs.redis.com/latest/kubernetes/deployment/openshift/openshift-cli/)
 ### Create redis enterprise databases
 * A separate role is created for each database.  This is *VERY IMPORTANT* for effectively using the plugin.  Each database needs a separate role only for that database.  If a common role is used across all databases in a large cluster, the performance aspect can be very significant, 
 * Create two redis enterprise databases.  The first database is the Target database for redis connect and the second stores meta-data for redis-connect
@@ -276,7 +277,10 @@ brew install helm
 brew install jq
 helm repo add hashicorp https://helm.releases.hashicorp.com
 helm repo update
+# this one is for gke
 helm install vault hashicorp/vault --namespace vault -f override-values.yaml
+# this one is for openshift
+helm install vault hashicorp/vault --namespace vault -f override-values-openshift.yaml
 ```  
 #### unseal the vault
 * This follows the technique from within this link [Set up vault on GKE](https://learn.hashicorp.com/tutorials/vault/kubernetes-google-cloud-gke).  Read this section for explanation of these commands.
