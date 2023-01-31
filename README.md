@@ -59,7 +59,7 @@ will run in separate namespaces in a GKE cluster.
 * [Vault k8 injector](https://www.vaultproject.io/docs/platform/k8s/injector)
 * [Using Jinja2 Template in Ansible](https://www.linuxtechi.com/configure-use-ansible-jinja2-templates/)
 * [Installing OpenShift on GCP](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
-* [Deploy Redis Enterprise with OpenShift CLI](https://docs.redis.com/latest/kubernetes/deployment/openshift/openshift-cli/e
+* [Deploy Redis Enterprise with OpenShift CLI](https://docs.redis.com/latest/kubernetes/deployment/openshift/openshift-cli/)
 
 ## Technical Overview
 
