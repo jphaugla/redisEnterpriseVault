@@ -47,8 +47,13 @@
   include_tasks: create-postgres-database.yml
   when:
     - create_postgres_database
+
+- name: Create vault gke
+  include_tasks: create-vault.yml
+  when:
+    - create_vault
  
-- name: Create vault 
+- name: Create vault openshift
   include_tasks: create-vault-openshift.yml
   when:
     - create_vault_openshift
