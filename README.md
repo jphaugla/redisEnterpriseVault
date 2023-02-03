@@ -92,6 +92,9 @@ This parameter file is used by the [driving *main* ansible task](terraform/ansib
 
 ### GKE Automated Instructions
 This terraform ansible setup has been tested on an AMD64 mac.  It needs some additional pip installs
+
+**NOTE** you must have posgtresql binaries installed before `pip3 install psycopg2`
+
 * apply additional pip installs
 ```bash
 pip3 install requests

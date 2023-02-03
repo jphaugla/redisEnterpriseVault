@@ -37,3 +37,7 @@ variable "vault_chart_version" {
 variable "postgres_pw" {
     description = "the postgres password"
 }
+
+variable "python_path" {
+    description = "the path to python"
+}
