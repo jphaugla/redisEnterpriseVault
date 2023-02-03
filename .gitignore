@@ -1,5 +1,10 @@
 # Local .terraform directories
 **/.terraform/*
+**/.terraform.lock.hcl
+
+# Holds temp generate ansible values
+terraform/ansible-gke/temp/
+terraform/ansible-gke/gkeconfig
 
 # .tfstate files
 *.tfstate
@@ -32,3 +37,6 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+.idea/
+**/.envrc
