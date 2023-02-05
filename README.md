@@ -153,16 +153,23 @@ There are a few minor differences but parametrization takes care of those differ
 cd ansible-openshift
 ./manual.sh
 ```
+When the above script finishes it will output an *export KUBECONFIG* command.  Use this command to allow the *oc* and/or *kubectl* commands to work.  These binaries (oc and kubectl) are in the ./ansible-openshift/binaries directory
+#### run the ansible jobs to configure postgres, redis enterprise, and vault
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
   * NOTE: there is a template setup for [openshift](terraform/ansible-gke/gke-test/vars/main.yml.openshift)
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
 * Kick off the ansible script
 
-
 ```bash
 cd  terraform/ansible-gke
 ./manual_run_openshift.sh
 ```
+to destroy the openshift environment:
+```bash
+cd ./ansible-openshift
+./binaries/openshift-install cluster destroy --dir install-files
+```
+
 
 ### Run manually
 
