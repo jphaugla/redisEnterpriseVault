@@ -167,7 +167,7 @@ cd  terraform/ansible-gke
 to destroy the openshift environment:
 ```bash
 cd ./ansible-openshift
-./binaries/openshift-install cluster destroy --dir install-files
+./binaries/openshift-install destroy cluster --dir install-files
 ```
 
 
