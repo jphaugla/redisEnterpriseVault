@@ -147,10 +147,17 @@ the same ansible as is used in the GCK automation of the Redis Enterprise, Postg
 There are a few minor differences but parametrization takes care of those differences.
 
 #### Run ansible OpenShift script
+* First create the openshift cluster with provided script
+  * [This script follows these OpenShift on GCP steps](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
+```bash
+cd ansible-openshift
+./manual.sh
+```
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
   * NOTE: there is a template setup for [openshift](terraform/ansible-gke/gke-test/vars/main.yml.openshift)
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
 * Kick off the ansible script
+
 
 ```bash
 cd  terraform/ansible-gke
