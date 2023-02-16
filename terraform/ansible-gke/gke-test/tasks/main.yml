@@ -61,7 +61,7 @@
 - name: check vault 
   include_tasks: check-vault-ready.yml
   when:
-    - create_vault
+    - check_vault
 
 - name: vault initialize
   include_tasks: vault-init.yml
