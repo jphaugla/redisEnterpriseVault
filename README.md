@@ -368,6 +368,7 @@ kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
 ### Redis Connect Configuration
 * create service account and namespace
+  * service account is only needed if using vault integration
 ```bash
 cd $REDIS_CONNECT
 kubectl create namespace redis-connect
@@ -436,6 +437,7 @@ $DEMO/getDatabasePw.sh
 vi jobmanager.properties
 kubectl create configmap redis-connect-config \
   --from-file=jobmanager.properties=jobmanager.properties \
+  --from-file=logback.xml=logback.xml 
   --from-file=redisconnect_credentials_jobmanager.properties=non-vault/redisconnect_credentials_jobmanager.properties \
   --from-file=redisconnect_credentials_redis_postgres-job.properties=non-vault/redisconnect_credentials_redis_postgres-job.properties \
   --from-file=redisconnect_credentials_postgresql_postgres-job.properties=non-vault/redisconnect_credentials_postgresql_postgres-job.properties 

@@ -93,11 +93,17 @@
   when:
     - vault_write_k8s_config
  
-- name: create redis-connect
-  include_tasks: create-redis-connect.yml
+- name: create redis-connect namespace
+  include_tasks: create-redis-connect-namespace.yml
   when:
-    - create_redis_connect
+    - create_redis_connect_namespace
  
+- name: create redis-connect vault
+  include_tasks: create-redis-connect-vault.yml
+  when:
+    - create_redis_connect_vault
+ 
+#  this is only needed if doing vault with redis connect-otherwise not necessary
 - name: create redis-connect policy
   include_tasks: redis-connect-policy-role.yml
   when:
@@ -107,3 +113,8 @@
   include_tasks: redis-connect-start.yml
   when:
     - start_redis_connect
+
+- name: start redis connect no-vault
+  include_tasks: redis-connect-start-no-vault.yml
+  when:
+    - start_redis_connect_no_vault

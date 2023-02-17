@@ -5,21 +5,21 @@ create_redis: True
 create_redis_databases: True
 create_postgres: True
 create_postgres_database: True
-create_vault: True
+create_vault: False
 create_vault_openshift: False
-check_vault: True
-download_vault_plugin: True
-vault_initialize: True
-vault_unseal: True
-vault_plugin: True
-vault_write_database: True
-vault_enable_k8s: True
-vault_write_k8s_config: True
+check_vault: False
+download_vault_plugin: False
+vault_initialize: False
+vault_unseal: False
+vault_plugin: False
+vault_write_database: False
+vault_enable_k8s: False
+vault_write_k8s_config: False
 create_redis_connect_namespace: True
 #  this is only needed if doing vault with redis connect-otherwise not necessary
-create_redis_connect_vault: True
+create_redis_connect_vault: False
 #  this is only needed if doing vault with redis connect-otherwise not necessary
-redis_connect_policy_role: True
+redis_connect_policy_role: False
 #  this is redis connect with vault
-start_redis_connect: True
-start_redis_connect_no_vault: False
+start_redis_connect: False
+start_redis_connect_no_vault: True
