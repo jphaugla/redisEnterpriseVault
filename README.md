@@ -130,6 +130,10 @@ terraform destroy --auto-approve
 #### General notes
 There are several locations for parameters.  
 * The first is in *terraform/test/main.tf*  This is only for GKE
+  * these three boolean parameters control whether vault, postgres, and redis-connect are created:  do_vault, do_postgres, do_redis_connect
+* When running GKE or Openshift manually, these same parameters are important in ./terraform/ansible-gke 
+  * see the files manual_run_gke.sh or manual_run_openshift.sh for the environment settings in these scripts 
+  * NOTE:  parameters don't have the *do_* prefix so paraemeters are gke, vault, postgres, and redis_connect
 * The second is in *terrafrom/ansible-gke/gke-test/vars/main.yml*  This is for both GKE and OpenShift
   * The parameters in vars/main.yml control which tasks run
   * By manipulating these parameters certain parts of the ansible can be run leaving other parts intact
@@ -156,7 +160,6 @@ cd ansible-openshift
 When the above script finishes it will output an *export KUBECONFIG* command.  Use this command to allow the *oc* and/or *kubectl* commands to work.  These binaries (oc and kubectl) are in the ./ansible-openshift/binaries directory
 #### run the ansible jobs to configure postgres, redis enterprise, and vault
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
-  * NOTE: there is a template setup for [openshift](terraform/ansible-gke/gke-test/vars/main.yml.openshift)
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
 * Kick off the ansible script
 
