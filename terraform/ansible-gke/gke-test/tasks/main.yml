@@ -6,115 +6,138 @@
 - name: "Connect to gke cluster (update kubeconfig)"
   shell: "gcloud container clusters get-credentials {{ cluster_name }} --region {{ gcp_region }} --project {{ gcp_project }}"
   when: 
-    - gke
+    - gke|bool
 
 - name: Create redis-enterprise cluster gke
   include_tasks: create-redis-enterprise.yml
   when:
-    - create_redis_gke
+    - create_redis|bool
+    - gke|bool
 
 - name: Create redis-enterprise cluster openshift
   include_tasks: create-redis-enterprise-openshift.yml
   when:
-    - create_redis_openshift
+    - create_redis|bool
+    - not gke|bool
 
 - name: verify cluster created
   include_tasks: check-redis-ready.yml
   when:
-    - create_redis
+    - create_redis|bool
  
 - name: get cluster secrets
   include_tasks: get-rec-secrets.yml
   when:
-    - create_redis
+    - create_redis|bool
  
 - name: create redisinsights
   include_tasks: create-redisinsights.yml
   when:
-    - create_redis
+    - create_redis|bool
  
 - name: Create redis databases
   include_tasks: create-databases.yml
   when:
-    - create_redis_databases
+    - create_redis_databases|bool
  
 - name: Create postgres 
   include_tasks: create-postgres.yml
   when:
-    - create_postgres
+    - create_postgres|bool
+    - postgres|bool
  
 - name: Create postgres database
   include_tasks: create-postgres-database.yml
   when:
-    - create_postgres_database
+    - create_postgres_database|bool
+    - postgres|bool
 
 - name: Create vault gke
   include_tasks: create-vault.yml
   when:
-    - create_vault
+    - create_vault|bool
+    - gke|bool
+    - vault|bool
  
 - name: Create vault openshift
   include_tasks: create-vault-openshift.yml
   when:
-    - create_vault_openshift
+    - create_vault|bool
+    - not gke|bool
+    - vault|bool
  
 - name: check vault 
   include_tasks: check-vault-ready.yml
   when:
-    - check_vault
+    - check_vault|bool
+    - vault|bool
 
 - name: vault initialize
   include_tasks: vault-init.yml
   when:
-    - vault_initialize
+    - vault_initialize|bool
+    - vault|bool
  
 - name: Unseal vault 
   include_tasks: vault-unseal.yml
   when:
-    - vault_unseal
+    - vault_unseal|bool
+    - vault|bool
 
 - name: vault plugin copy
   include_tasks: vault-plugin.yml
   when:
-    - vault_plugin
+    - vault_plugin|bool
+    - vault|bool
  
 - name: vault write database config
   include_tasks: vault-write-database.yml
   when:
-    - vault_write_database
+    - vault_write_database|bool
+    - vault|bool
  
 - name: vault auth k8s
   include_tasks: vault-enable-kubernetes.yml
   when:
-    - vault_enable_k8s
+    - vault_enable_k8s|bool
+    - vault|bool
  
 - name: vault write k8s config
   include_tasks: vault-write-k8s-config.yml
   when:
-    - vault_write_k8s_config
+    - vault_write_k8s_config|bool
+    - vault|bool
  
 - name: create redis-connect namespace
   include_tasks: create-redis-connect-namespace.yml
   when:
-    - create_redis_connect_namespace
+    - create_redis_connect_namespace|bool
+    - redis_connect|bool
  
 - name: create redis-connect vault
   include_tasks: create-redis-connect-vault.yml
   when:
-    - create_redis_connect_vault
+    - create_redis_connect_vault|bool
+    - redis_connect|bool
+    - vault|bool
  
-#  this is only needed if doing vault with redis connect-otherwise not necessary
 - name: create redis-connect policy
   include_tasks: redis-connect-policy-role.yml
   when:
-    - redis_connect_policy_role
+    - redis_connect_policy_role|bool
+    - redis_connect|bool
+    - vault|bool
 
 - name: start redis connect
   include_tasks: redis-connect-start.yml
   when:
-    - start_redis_connect
+    - start_redis_connect|bool
+    - redis_connect|bool
+    - vault|bool
 
 - name: start redis connect no-vault
   include_tasks: redis-connect-start-no-vault.yml
   when:
-    - start_redis_connect_no_vault
+    - start_redis_connect|bool
+    - not vault|bool
+    - redis_connect|bool

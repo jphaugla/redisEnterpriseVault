@@ -41,3 +41,18 @@ variable "postgres_pw" {
 variable "python_path" {
     description = "the path to python"
 }
+
+variable "do_vault" {
+    description = "include integration with vault"
+    type = bool
+}
+
+variable "do_postgres" {
+    description = "include integration with postgres"
+    type = bool
+}
+
+variable "do_redis_connect" {
+    description = "include integration with redis_connect"
+    type = bool
+}

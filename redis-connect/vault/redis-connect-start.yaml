@@ -18,14 +18,14 @@ spec:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "redis-connect"
         vault.hashicorp.com/secret-volume-path: "/opt/redislabs/redis-connect/config/samples/credentials"
-        vault.hashicorp.com/agent-inject-file-redis-connect: "redisconnect_credentials_postgresql_postgres-job"
+        vault.hashicorp.com/agent-inject-file-redis-connect: "redisconnect_credentials_postgresql_postgres-job.properties"
         vault.hashicorp.com/agent-inject-secret-redis-connect: 'database/creds/redis-connect'
         vault.hashicorp.com/agent-inject-template-redis-connect: |
           {{ with secret "database/creds/redis-connect" -}}
           source.username={{ .Data.username }}
           source.password={{ .Data.password }}
           {{- end }}
-        vault.hashicorp.com/agent-inject-file-redis-enterprise-role: "redisconnect_credentials_redis_postgres-job"
+        vault.hashicorp.com/agent-inject-file-redis-enterprise-role: "redisconnect_credentials_redis_postgres-job.properties"
         vault.hashicorp.com/agent-inject-secret-redis-enterprise-role: 'database/creds/redis-enterprise-database'
         vault.hashicorp.com/agent-inject-template-redis-enterprise-role: |
           {{ with secret "database/creds/redis-enterprise-database" -}}

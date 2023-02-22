@@ -1,4 +1,4 @@
-install_openshift: True
+install_openshift: False
 create_install_config: True
 install_openshift_cluster: True
 

@@ -438,9 +438,9 @@ vi jobmanager.properties
 kubectl create configmap redis-connect-config \
   --from-file=jobmanager.properties=jobmanager.properties \
   --from-file=logback.xml=logback.xml 
-  --from-file=redisconnect_credentials_jobmanager.properties=non-vault/redisconnect_credentials_jobmanager.properties \
-  --from-file=redisconnect_credentials_redis_postgres-job.properties=non-vault/redisconnect_credentials_redis_postgres-job.properties \
-  --from-file=redisconnect_credentials_postgresql_postgres-job.properties=non-vault/redisconnect_credentials_postgresql_postgres-job.properties 
+  --from-file=redisconnect_credentials_jobmanager.properties=redisconnect_credentials_jobmanager.properties \
+  --from-file=redisconnect_credentials_redis_postgres-job.properties=redisconnect_credentials_redis_postgres-job.properties \
+  --from-file=redisconnect_credentials_postgresql_postgres-job.properties=redisconnect_credentials_postgresql_postgres-job.properties 
 kubectl apply -f non-vault/redis-connect-start.yaml
 ```
 
