@@ -3,24 +3,6 @@
 
 ---
 
-- name: get redis database password
-  shell: "kubectl -n demo get secret redb-redis-enterprise-database -o=jsonpath={.data.password} | base64 -d"
-  register: redis_db_pw
-
-- name: save redis database password
-  copy:
-    content: "{{ redis_db_pw.stdout }}"
-    dest: temp/database_redis_pw.txt
-
-- name: get redis timeseries database password
-  shell: "kubectl -n demo get secret redb-redis-meta -o=jsonpath={.data.password} | base64 -d"
-  register: meta_db_pw
-
-- name: save redis database password
-  copy:
-    content: "{{ meta_db_pw.stdout }}"
-    dest: temp/database_meta_pw.txt
-
 - name: create redis-connect-start
   template:
     src: gke-test/templates/redis-connect-start.j2

@@ -16,3 +16,6 @@ spec:
   - type: redis-enterprise
     role: "db1"
     acl: "Full Access"
+  modulesList:
+  - name: rg
+    version: 1.2.5

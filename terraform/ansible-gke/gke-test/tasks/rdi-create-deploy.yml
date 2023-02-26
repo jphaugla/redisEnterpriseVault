@@ -1,0 +1,17 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: create the redis-di instance
+  kubernetes.core.k8s_exec:
+    namespace: rdi
+    pod: redis-di-cli
+    command: /bin/sh -c /tmp/redis-di-create.sh
+    command: "{{lookup('file', '../../rdi/redis-di-create.sh')}}"
+
+- name: deploy the redis-di instance
+  kubernetes.core.k8s_exec:
+    namespace: rdi
+    pod: redis-di-cli
+    command: "{{lookup('file', '../../rdi/redis-di-deploy.sh')}}"

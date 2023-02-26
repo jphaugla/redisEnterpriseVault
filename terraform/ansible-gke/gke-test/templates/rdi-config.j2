@@ -1,0 +1,40 @@
+connections:
+  # Redis data DB connection details
+  # This section is for configuring the Redis database to which Redis Data Integration will connect to
+  target:
+    # Host of the Redis database to which Redis Data Integration will write the processed data
+    host: redis-enterprise-database.demo.svc
+    # Port for the Redis database to which Redis Data Integration will write the processed data
+    port: 12000
+    # User of the Redis database to which Redis Data Integration will write the processed data
+    # user: 
+    # Password (if user is omitted, use this as the default database password)
+    password: {{ lookup('file', '../temp/database_redis_pw.txt') }}
+    # In case of secured password
+    #password: ${secrets:target-password}
+    # TLS
+    # Private key file to authenticate with
+    #key: /path/to/key
+    # Client certificate file to authenticate with
+    #cert: /path/to/cert
+    # CA certificate file to verify with
+    #cacert: /path/to/cacert
+applier:
+  # Interval (in seconds) on which to perform retry on failure (default: 5)
+  #on_failed_retry_interval: <RETRY_INTERVAL_IN_SEC>
+  # The batch size on which data will be written to target (default: 2000)
+  #batch: <BATCH_SIZE>
+  # Interval (in ms) in which data will be written to target even if batch size was not reached (default: 100)
+  #duration: <DURATION_IN_MS>
+  # Error handling strategy: ignore - skip, dlq - store rejected messages in a dead letter queue (default: dlq)
+  #error_handling: <ERROR_HANDLING_STRATEGY>
+  # Dead letter queue max messages per stream (default: 1000)
+  #dlq_max_messages: <DLQ_MAX_MESSAGES>
+  # Target data type: hash/json - RedisJSON module must be in use in the target DB (default:hash)
+  #target_data_type: <TARGET_DATA_TYPE>
+  # Number of processes to use when syncing initial data (default:4)
+  #initial_sync_processes: <INITIAL_SYNC_PROCESSES>
+  # Checks if the batch has been written to the replica shard (default: false)
+  #wait_enabled: <WAIT_ENABLED>
+  # Ensures that a batch has been written to the replica shard and keeps retrying if not (default: true)
+  #retry_on_replica_failure: <RETRY_ON_REPLICA_FAILURE>

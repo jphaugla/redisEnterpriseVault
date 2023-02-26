@@ -1,0 +1,17 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: Apply rdi pod
+  kubernetes.core.k8s:
+    namespace: rdi
+    src: ../../rdi/debezium-pod.yml
+
+- name: use template to define configMap
+  template:
+    src: gke-test/templates/application.properties.j2
+    dest: ../../rdi/application.properties
+
+- name: create rdi config map
+  shell: kubectl -n rdi create configmap debezium-config --from-file=../../rdi/application.properties

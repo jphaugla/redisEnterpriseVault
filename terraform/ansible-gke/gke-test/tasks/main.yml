@@ -34,6 +34,12 @@
   include_tasks: create-redisinsights.yml
   when:
     - create_redis|bool
+
+#  this is needed for rdi but gears module is in database create script so needed in all cases
+- name: install redis gears for rdi
+  include_tasks: install-redis-gears.yml
+  when:
+    - install_redis_gears|bool
  
 - name: Create redis databases
   include_tasks: create-databases.yml
@@ -135,9 +141,41 @@
     - redis_connect|bool
     - vault|bool
 
+# this is needed for non-vault redis connect 
+# this is needed for rdi
+- name: get database passwords
+  include_tasks: get-db-secrets.yml
+  when:
+    - get_database_secrets
+
 - name: start redis connect no-vault
   include_tasks: redis-connect-start-no-vault.yml
   when:
     - start_redis_connect|bool
     - not vault|bool
     - redis_connect|bool
+
+- name: create rdi namespace
+  include_tasks: create-rdi-namespace.yml
+  when:
+    - create_rdi_namespace|bool
+    - rdi|bool
+
+- name: create rdi 
+  include_tasks: create-rdi.yml
+  when:
+    - create_rdi|bool
+    - rdi|bool
+
+- name: rdi create deploy 
+  include_tasks: rdi-create-deploy.yml
+  when:
+    - rdi_create_deploy|bool
+    - rdi|bool
+
+- name: create debezium 
+  include_tasks: create-debezium.yml
+  when:
+    - create_debezium|bool
+    - rdi|bool
+

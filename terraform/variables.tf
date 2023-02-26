@@ -56,3 +56,8 @@ variable "do_redis_connect" {
     description = "include integration with redis_connect"
     type = bool
 }
+
+variable "do_rdi" {
+    description = "include integration with redis data integration"
+    type = bool
+}

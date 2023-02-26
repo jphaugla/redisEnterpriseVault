@@ -5,7 +5,7 @@
       {
         "database": {
           "credentialsFilePath" : "/opt/redislabs/redis-connect/config/samples/credentials",
-          "databaseURL": "redis://redis-enterprise-database.demo.svc:17932",
+          "databaseURL": "redis://redis-enterprise-database.demo.svc:12000",
           "databaseType": "REDIS"
         },
         "index": 1,

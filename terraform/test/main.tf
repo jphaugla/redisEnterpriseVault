@@ -15,7 +15,8 @@ module "mymodule" {
    gke_release_channel  = "STABLE"
    postgres_pw          = "jasonrocks"
    python_path          = "/usr/local/bin/python3"
-   do_vault             = true
+   do_vault             = false
    do_postgres          = true
-   do_redis_connect     = true
+   do_redis_connect     = false
+   do_rdi               = true
 }
