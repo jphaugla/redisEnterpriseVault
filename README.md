@@ -109,8 +109,10 @@ pip3 install --global-option=build_ext \
             --global-option="-I/usr/local/opt/openssl/include" \
             --global-option="-L/usr/local/opt/openssl/lib" psycopg2
 ```
-
-* set the variables in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
+* set the parameters in the main [terraform job file](terraform/test/main.tf)
+  * do_vault, do-postgres, do_redis_connect, and do_rdi are main control switches for what pieces of the ansible run
+* no need to set the variables in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
+  * this parameter file is only needed for reruns to disable parts of the operation
 * kick off the terraform creation-the gke creation takes a very long time-over 10 minutes
 ```bash
 cd terraform/test
@@ -130,10 +132,10 @@ terraform destroy --auto-approve
 #### General notes
 There are several locations for parameters.  
 * The first is in *terraform/test/main.tf*  This is only for GKE
-  * these three boolean parameters control whether vault, postgres, and redis-connect are created:  do_vault, do_postgres, do_redis_connect
+  * these four boolean parameters control whether vault, postgres, redis-connect, and redis data integration are created:  do_vault, do_postgres, do_redis_connect, do_rdi
 * When running GKE or Openshift manually, these same parameters are important in ./terraform/ansible-gke 
   * see the files manual_run_gke.sh or manual_run_openshift.sh for the environment settings in these scripts 
-  * NOTE:  parameters don't have the *do_* prefix so paraemeters are gke, vault, postgres, and redis_connect
+  * NOTE:  parameters don't have the *do_* prefix so paraemeters are gke, vault, postgres, redis_connect, and rdi
 * The second is in *terrafrom/ansible-gke/gke-test/vars/main.yml*  This is for both GKE and OpenShift
   * The parameters in vars/main.yml control which tasks run
   * By manipulating these parameters certain parts of the ansible can be run leaving other parts intact
@@ -161,6 +163,8 @@ When the above script finishes it will output an *export KUBECONFIG* command.  U
 #### run the ansible jobs to configure postgres, redis enterprise, and vault
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
+  *  verify you have the vault, postgres, redis_connect and rdi variable set appropriately
+  *  Have not yet tested rdi with openshift (probably needs a change to the gears install)
 * Kick off the ansible script
 
 ```bash
