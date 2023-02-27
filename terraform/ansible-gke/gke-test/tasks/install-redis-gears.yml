@@ -1,0 +1,29 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: downlaod ubuntu gears
+  kubernetes.core.k8s_exec:
+    namespace: demo
+    pod: test-rec-0
+    command: curl -s https://redismodules.s3.amazonaws.com/redisgears/redisgears_python.Linux-ubuntu18.04-x86_64.1.2.5.zip -o /tmp/redis-gears.zip
+  register: curl_out
+  when:
+    - gke|bool
+
+- name: downlaod redhat 8 gears
+  kubernetes.core.k8s_exec:
+    namespace: demo
+    pod: test-rec-0
+    command: curl -s https://redismodules.s3.amazonaws.com/redisgears/redisgears_python.Linux-rhel8-x86_64.1.2.5.zip -o /tmp/redis-gears.zip
+  register: curl_out
+  when:
+    - not gke|bool
+
+- name: install gears to the cluster
+  kubernetes.core.k8s_exec:
+    namespace: demo
+    pod: test-rec-0
+    command: curl -v -k -s -u demo@redislabs.com:"{{lookup('file', '../../temp/cluster_pw.txt')}}" -F "module=@/tmp/redis-gears.zip" https://localhost:9443/v2/modules
+  register: curl_out2
