@@ -164,7 +164,6 @@ When the above script finishes it will output an *export KUBECONFIG* command.  U
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
   *  verify you have the vault, postgres, redis_connect and rdi variable set appropriately
-  *  Have not yet tested rdi with openshift (probably needs a change to the gears install)
 * Kick off the ansible script
 
 ```bash
