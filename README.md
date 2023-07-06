@@ -77,18 +77,8 @@ will run in separate namespaces in a GKE cluster.
 &nbsp;
 
 ## Instructions
+Choose to do GKE or do OpenShift as kickoff script is completely different
 ***IMPORTANT NOTE**: Creating this demo application in your GCP account will create and consume GCP resources, which **will cost money**.
-
-### GKE or OpenShift
-Instructions and automation is available in this GitHub for both OpenShift (on GCP) and GKE engines.
-GKE automation relies on terraform/ansible whereas OpenShift automation only uses ansible.  Regardless of OpenShift or
-GKE, carefully set the task parameters to run the desired steps.  Template set of parameters are available for 
-running each version.  
-* [Template variable set up to run Openshift](terraform/ansible-gke/gke-test/vars/main.yml.openshift)
-* [Template variable set up to run GKE](terraform/ansible-gke/gke-test/vars/main.yml.gke)
-* [Make changes in this file to choose what to tasks to run](terraform/ansible-gke/gke-test/vars/main.yml)
-
-This parameter file is used by the [driving *main* ansible task](terraform/ansible-gke/gke-test/tasks/main.yml) to determine the ansible tasks to run
 
 ### GKE Automated Instructions
 This terraform ansible setup has been tested on an AMD64 mac.  It needs some additional pip installs
@@ -102,16 +92,33 @@ pip3 install google-auth
 pip3 install kubernetes
 pip3 install psycopg2
 ```
-Troubleshooting on the psycopg2 install.  Use [this psycopg2 install debug](https://stackoverflow.com/questions/27264574/import-psycopg2-library-not-loaded-libssl-1-0-0-dylib)   
-The suggestion that worked for me was this
+* Troubleshooting on the psycopg2 install.  
+  * Use [this psycopg2 install debug](https://stackoverflow.com/questions/27264574/import-psycopg2-library-not-loaded-libssl-1-0-0-dylib)   
+  * The suggestion that worked for me was this
 ```bash
 pip3 install --global-option=build_ext \
             --global-option="-I/usr/local/opt/openssl/include" \
             --global-option="-L/usr/local/opt/openssl/lib" psycopg2
 ```
+### Run GKE
 * set the parameters in the main [terraform job file](terraform/test/main.tf)
   * do_vault, do-postgres, do_redis_connect, and do_rdi are main control switches for what pieces of the ansible run
-* no need to set the variables in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
+  * main.tf file includes version information such as redis enterprise version, vault chart version
+    * it is very important to get the desired redis-enterprise version or the initial install will fail
+      * Go to the redis documentation [quick start operator bundle](https://docs.redis.com/latest/kubernetes/deployment/quick-start/#download-the-operator-bundle)
+      * Click on the button [releases](https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases)
+      * enter the release with the tag (it starts with a v)
+    * check the redis enterprise database version and ensure modules have the correct versions
+      * click on the link above containing the v to get redis enterprise database version from the Images section
+      * go to [redis enterprise release notes](https://docs.redis.com/latest/rs/release-notes/) for this database version
+      * scroll down to the Redis Stack for this version and note the versions for timeseries module
+      * update [redis-meta.yml](demo/redis-meta.yml) for the correct timeseries version found above
+      * Gears is a separate download and installation into the redis nodes so need to adjust gears version in several places
+        * Can find [the latest gears version](https://docs.redis.com/latest/stack/release-notes/redisgears/)
+        * update [redis-enterprise-database.yml](demo/redis-enterprise-database.yml) for the correct gears version
+        * update the parameter for the gears version in [main.yml](terraform/ansible-gke)
+    * to check the vault versions use [this hashicorp link](https://developer.hashicorp.com/vault/docs/platform/k8s/helm)
+  * no need to set the variables in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
   * this parameter file is only needed for reruns to disable parts of the operation
 * kick off the terraform creation-the gke creation takes a very long time-over 10 minutes
 ```bash

@@ -4,14 +4,14 @@
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault write database/config/demo-test-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username=demo@redislabs.com password="{{ lookup('ansible.builtin.file', 'temp/cluster_pw.txt') }}"
+    command: vault write database/config/demo-test-rec-redis-enterprise-database plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-enterprise-database username="{{lookup('file', '../../temp/cluster_un.txt')}}" password="{{ lookup('ansible.builtin.file', 'temp/cluster_pw.txt') }}"
 
 
 - name: vault write meta database config
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault write database/config/demo-test-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-meta username=demo@redislabs.com password="{{ lookup('ansible.builtin.file', 'temp/cluster_pw.txt') }}"
+    command: vault write database/config/demo-test-rec-redis-meta plugin_name="redisenterprise-database-plugin" url="https://test-rec.demo.svc:9443" allowed_roles="*" database=redis-meta username="{{lookup('file', '../../temp/cluster_un.txt')}}" password="{{ lookup('ansible.builtin.file', 'temp/cluster_pw.txt') }}"
 
 - name: create redis  database role
   kubernetes.core.k8s_exec:

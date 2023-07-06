@@ -10,13 +10,13 @@ module "mymodule" {
    region 		= "us-central1"
    cluster_name_final   = "jph-gke"
    zone 		= "us-central1-a"
-   redis_enterprise_version = "v6.2.18-41"
-   vault_chart_version  = "0.23.0"
+   redis_enterprise_version = "v6.4.2-6"
+   vault_chart_version  = "0.24.0"
    gke_release_channel  = "STABLE"
    postgres_pw          = "jasonrocks"
    python_path          = "/usr/local/bin/python3"
-   do_vault             = false
+   do_vault             = true
    do_postgres          = true
-   do_redis_connect     = false
-   do_rdi               = true
+   do_redis_connect     = true
+   do_rdi               = false
 }

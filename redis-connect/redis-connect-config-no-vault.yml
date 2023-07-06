@@ -1,0 +1,169 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-connect-config
+  namespace: redis-connect
+data:
+  jobmanager.properties: |
+    ##################################################################################################
+    #####     Properties to start a Redis Connect cluster. Default values are commented out.     #####
+    ##################################################################################################
+
+    #####     Cluster properties
+    #cluster.name=default
+    #cluster.leader.heartbeat.lease.renewal.interval=5000
+    #cluster.election.attempt.interval=5000
+    #cluster.timeseries.metrics.enabled=false
+
+    #####     Job Manager Services properties
+    #job.manager.services.enabled=true
+    #job.manager.services.threadpool.size=2
+    #job.reap.attempt.interval=7000
+    #job.claim.service.enabled=true
+    #job.claim.attempt.interval=5000
+    #job.claim.batch.size.per.attempt=4
+    #job.claim.max.capacity=4
+    #job.claim.heartbeat.lease.renewal.interval=10000
+
+    #####     REST properties
+    #rest.api.enabled=true
+    rest.api.port=8282
+
+    #####     Job Manager Database properties
+    redis.connection.url=redis://redis-meta.demo.svc:12001
+    #redis.connection.sslEnabled=false
+    #truststore=<path_to_JKS>
+    #keystore=<path_to_PKCS>
+    #redis.connection.insecure=false
+    #redis.connection.timeout.duration=5
+    #redis.connection.auto.reconnect=true
+    #redis.connection.suspend.reconnect.on.protocol.failure=true
+
+    #####     Credentials properties
+    credentials.file.path=/opt/redislabs/redis-connect/config/samples/credentials
+    #credentials.rotation.event.listener.enabled=false
+    #credentials.rotation.event.listener.interval=60000
+
+  logback.xml: |
+     <configuration debug="false" scan="true" scanPeriod="15 seconds">
+
+       <property name="LOG_REDIS_CONNECT_PATH" value="logs/redis-connect"/>
+       <property name="LOG_REDIS_CONNECT_MANAGER_PATH" value="logs/redis-connect-manager.log"/>
+       <property name="LOG_REDIS_CONNECT_HEARTBEAT_PATH" value="logs/redis-connect-heartbeat.log"/>
+   
+       <appender name="REDIS_CONNECT_HEARTBEAT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+           <file>${LOG_REDIS_CONNECT_HEARTBEAT_PATH}</file>
+           <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+               <fileNamePattern>logs/archived/redis-connect-heartbeat.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+               <!-- each archived file, size max 10MB -->
+               <maxFileSize>10MB</maxFileSize>
+               <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
+               <totalSizeCap>20GB</totalSizeCap>
+               <!-- 60 days to keep -->
+               <maxHistory>60</maxHistory>
+           </rollingPolicy>
+           <encoder>
+               <pattern>%d %p %c{1.} [%t] %m%n</pattern>
+           </encoder>
+       </appender>
+       <appender name="REDIS_CONNECT_MANAGER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+           <file>${LOG_REDIS_CONNECT_MANAGER_PATH}</file>
+           <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+               <fileNamePattern>logs/archived/redis-connect-manager.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+               <!-- each archived file, size max 10MB -->
+               <maxFileSize>10MB</maxFileSize>
+               <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
+               <totalSizeCap>20GB</totalSizeCap>
+               <!-- 60 days to keep -->
+               <maxHistory>60</maxHistory>
+           </rollingPolicy>
+           <encoder>
+               <pattern>%d %p %c{1.} [%t] %m%n</pattern>
+           </encoder>
+       </appender>
+       <appender name="REDIS_CONNECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+           <file>${LOG_REDIS_CONNECT_PATH}-${PID}.log</file>
+           <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+               <fileNamePattern>logs/archived/redis-connect-${PID}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+               <!-- each archived file, size max 10MB -->
+               <maxFileSize>10MB</maxFileSize>
+               <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
+               <totalSizeCap>20GB</totalSizeCap>
+               <!-- 60 days to keep -->
+               <maxHistory>60</maxHistory>
+           </rollingPolicy>
+           <encoder>
+               <pattern>%d %p %c{1.} [%t] %m%n</pattern>
+           </encoder>
+       </appender>
+       <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+           <encoder>
+               <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+           </encoder>
+       </appender>
+   
+       <logger name="redis-connect-heartbeat" level="INFO" additivity="false">
+           <appender-ref ref="REDIS_CONNECT_HEARTBEAT"/>
+           <appender-ref ref="CONSOLE" />
+       </logger>
+       <logger name="redis-connect-manager" level="DEBUG" additivity="false">
+           <appender-ref ref="REDIS_CONNECT_MANAGER"/>
+           <appender-ref ref="CONSOLE" />
+       </logger>
+       <logger name="redis-connect" level="INFO" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE" />
+       </logger>
+       <logger name="io.netty" level="OFF" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE" />
+       </logger>
+       <logger name="io.lettuce" level="OFF" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE" />
+       </logger>
+       <logger name="com.zaxxer" level="OFF" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE"/>
+       </logger>
+       <logger name="io.debezium" level="INFO" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE"/>
+       </logger>
+       <logger name="org.apache.kafka" level="OFF" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE"/>
+       </logger>
+       <logger name="org.springframework" level="OFF" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE"/>
+       </logger>
+       <logger name="springfox" level="OFF" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE"/>
+       </logger>
+       <logger name="org" level="OFF" additivity="false">
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="CONSOLE"/>
+       </logger>
+       <logger name="Validator" level="OFF" additivity="false"/>
+       <logger name="_org.springframework.web.servlet.HandlerMapping" level="OFF" additivity="false"/>
+       <logger name="com.redis.connect.cluster.RedisConnectSpringBootApplication" level="OFF" additivity="false"/>
+       <logger name="reactor.util" level="OFF" additivity="false"/>
+   
+       <root>
+           <appender-ref ref="REDIS_CONNECT"/>
+           <appender-ref ref="REDIS_CONNECT_MANAGER"/>
+           <appender-ref ref="REDIS_CONNECT_HEARTBEAT"/>
+       </root>
+   
+     </configuration>
+  redisconnect_credentials_jobmanager.properties: |
+     jobmanager.username=
+     jobmanager.password=YETZm41C
+  redisconnect_credentials_postgresql_postgres-job.properties: |
+     source.username=postgres
+     source.password=jasonrocks
+  redisconnect_credentials_redis_postgres-job.properties: |
+     target.username=
+     target.password=8Le1EOGL

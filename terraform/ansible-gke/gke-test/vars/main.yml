@@ -21,3 +21,4 @@ create_rdi_namespace: true
 create_rdi: true
 rdi_create_deploy: true
 create_debezium: true
+gears_version: 1.2.6

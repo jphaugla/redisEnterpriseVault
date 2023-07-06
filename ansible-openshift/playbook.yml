@@ -10,7 +10,7 @@
   vars:
     gcp_project: central-beach-194106
     openshift_installer_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/ 
-    openshift_version: 4.11.3
+    openshift_version: latest-4.12
     cluster_name: jph-openshift
     gcp_cred_kind: serviceaccount
     gcp_cred_file: /Users/jasonhaugland/.gcp/bb-gcp-terraform.json

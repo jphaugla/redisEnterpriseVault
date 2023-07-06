@@ -35,11 +35,13 @@
   when:
     - create_redis|bool
 
-#  this is needed for rdi but gears module is in database create script so needed in all cases
+#  this is needed for rdi 
+#  removed gears from database creation if rdi not needed
 - name: install redis gears for rdi
   include_tasks: install-redis-gears.yml
   when:
     - install_redis_gears|bool
+    - rdi|bool
  
 - name: Create redis databases
   include_tasks: create-databases.yml
