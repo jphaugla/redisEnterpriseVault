@@ -2,27 +2,36 @@
 # google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
 
 ---
-- name:
-  kubernetes.core.k8s_exec:
-    namespace: demo
-    pod: test-rec-0
-    command: curl -v -k -u demo@redislabs.com:"{{lookup('file', '../../temp/cluster_pw.txt')}}" -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db1","management":"admin"}'
-  register: curl_out
 
-- name:
-  kubernetes.core.k8s_exec:
+- name: Apply redis enterprise database with gears for rdi
+  kubernetes.core.k8s:
     namespace: demo
-    pod: test-rec-0
-    command: curl -v -k -u demo@redislabs.com:"{{lookup('file', '../../temp/cluster_pw.txt')}}" -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db2","management":"admin"}'
-  register: curl_out2
+    src: ../../demo/redis-enterprise-database-gears.yml
+  when
+    - rdi|bool
 
-- name: Apply redis enterprise database
+- name: Apply redis enterprise database without gears
   kubernetes.core.k8s:
     namespace: demo
     src: ../../demo/redis-enterprise-database.yml
+  when
+    - not rdi|bool
 
 - name: Apply redis meta database
   kubernetes.core.k8s:
     namespace: demo
     src: ../../demo/redis-meta.yml
 
+- name:
+  kubernetes.core.k8s_exec:
+    namespace: demo
+    pod: test-rec-0
+    command: curl -v -k -u "{{lookup('file', '../../temp/cluster_un.txt')}}":"{{lookup('file', '../../temp/cluster_pw.txt')}}" -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db1","management":"admin"}'
+  register: curl_out
+
+- name:
+  kubernetes.core.k8s_exec:
+    namespace: demo
+    pod: test-rec-0
+    command: curl -v -k -u "{{lookup('file', '../../temp/cluster_un.txt')}}":"{{lookup('file', '../../temp/cluster_pw.txt')}}" -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db2","management":"admin"}'
+  register: curl_out2

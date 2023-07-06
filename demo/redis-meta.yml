@@ -18,4 +18,4 @@ spec:
     acl: "Full Access"
   modulesList: 
   - name: timeseries
-    version: 1.6.17
+    version: 1.8.9
