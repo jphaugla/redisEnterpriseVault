@@ -13,9 +13,15 @@ Optional path is included to deploy without Vault.
 - [Important Links](#important-links)
 - [Technical Overview](#technical-overview)
 - [Instructions](#instructions)
-- - [GKE Automated Instructions](#gke-automated-instructions)
+  - [GKE Automated Instructions](#gke-automated-instructions)
+    - [Terraform Creation](#terraform-creation)
+    - [Terraform Destroy](#terraform-destroy)
+    - [Terraform Troubleshooting](#terraform-troubleshooting)
     - [General notes on terraform/ansible](#general-notes)
   - [OpenShift Automated Instructions](#openshift-automated-instructions)
+    - [Run Ansible OpenShift](#run-ansible-openshift)
+    - [Run Ansible K8s Jobs](#run-ansible-k8s)
+    - [Destroy OpenShift Environment](#destroy-openshift-environment)
   - [Run Manually](#run-manually)
     - [Prepare repository working directories](#prepare-repository-working-directories)
     - [Choose GKE or OpenShift](#choose-gke-or-openshift)
@@ -29,11 +35,11 @@ Optional path is included to deploy without Vault.
     - [Redis Connect](#redis-connect-configuration)
       - [Redis Connect with Vault](#redis-connect-with-vault)
       - [Redis Connect without Vault](#redis-connect-without-vault)
-  - [Validate Environment](#validate--environment)
+  - [Validate Environment](#validate-environment)
+    - [Validate Database Admin Access](#validate-database-admin-access)
     - [Validate Redisinsights](#validate-redisinsights)
-    - [Validate Redis Databases](#validate-redis-databases)
-    - [Test Replication](#test-replication)
-  
+    - [Validate Vault Redis Database access](#validate-vault-access)
+    - [Test Redis Connect Replication](#test-redis-connect-replication) 
 - [Debug Ideas](#debug-ideas)
   
 &nbsp;
@@ -117,21 +123,27 @@ pip3 install --global-option=build_ext \
         * *this is only needed if using RDI*
         * Can find [the latest gears version](https://docs.redis.com/latest/stack/release-notes/redisgears/)
         * update [redis-enterprise-database.yml](demo/redis-enterprise-database-gears.yml) for the correct gears version
-        * update the parameter for the gears version in [main.yml](terraform/ansible-gke)
+        * update the parameter for the gears version in [main.yml](terraform/ansible-gke/gke-test/vars/main.yml)
     * to check the vault versions use [this hashicorp link](https://developer.hashicorp.com/vault/docs/platform/k8s/helm)
   * no need to set the variables in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
-  * this parameter file is only needed for reruns to disable parts of the operation
-* kick off the terraform creation-the gke creation takes a very long time-over 10 minutes
+  * this parameter file is only needed for reruns to disable parts of the operation 
+  
+#### Terraform creation
+kick off the terraform creation-the gke creation takes a very long time-over 10 minutes
 ```bash
 cd terraform/test
 terraform init
 terraform apply --auto-approve
 ```
+
+#### Terraform destroy
 * to remove everything
 ```bash
 cd terraform/test
 terraform destroy --auto-approve
 ```
+
+#### Terraform troubleshooting
 * many errors are just terraform timing issues so can just repeat the apply or destroy and it will work
 * output such as vault keys will be in ./terraform/ansible-gke/temp
 * Can control which terraform pieces are built using the variable in this file
@@ -153,14 +165,13 @@ There are several locations for parameters.
 * terraform parameters are copied to the ansible environment in *terraform/provisioning.tf*
 * Even if no changes are needed to the GKE cluster, the ansible deployment is kicked off by the terraform script.
 
-
 ### OpenShift Automated Instructions
-OpenShift only uses ansible because the actual installation of the OpenShift cluster is automated by Openshift (using terraform internally) by install client software and using these 
+OpenShift automation does not use terraform at all.  Openshift automation only uses ansible because the actual installation of the OpenShift cluster is automated by Openshift (using terraform internally) by installing client software and using 
 this client to automate the install on GCP.   For simplicity, this GitHub automates this installation using ansible.  Following the use of ansible to install OpenShift, 
-the same ansible as is used in the GCK automation of the Redis Enterprise, PostgreSQL, Hashicorp Vault, and Redis Connect is also used with OpenShift.
-There are a few minor differences but parametrization takes care of those differences.
+the same ansible that is used in the GCK automation of the Redis Enterprise, PostgreSQL, Hashicorp Vault, and Redis Connect is also used with OpenShift.
+There are a few minor differences but parametrization takes care of the differences.
 
-#### Run ansible OpenShift script
+#### Run ansible OpenShift 
 * First create the openshift cluster with provided script
   * [This script follows these OpenShift on GCP steps](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
 ```bash
@@ -168,7 +179,8 @@ cd ansible-openshift
 ./manual.sh
 ```
 When the above script finishes it will output an *export KUBECONFIG* command.  Use this command to allow the *oc* and/or *kubectl* commands to work.  These binaries (oc and kubectl) are in the ./ansible-openshift/binaries directory
-#### run the ansible jobs to configure postgres, redis enterprise, and vault
+#### Run ansible k8s
+Run ansible k8s steps to configure postgres, redis enterprise, etc
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
   *  verify you have the vault, postgres, redis_connect and rdi variable set appropriately
@@ -178,12 +190,11 @@ When the above script finishes it will output an *export KUBECONFIG* command.  U
 cd  terraform/ansible-gke
 ./manual_run_openshift.sh
 ```
-to destroy the openshift environment:
+#### Destroy openshift environment
 ```bash
 cd ./ansible-openshift
 ./binaries/openshift-install destroy cluster --dir install-files
 ```
-
 
 ### Run manually
 
@@ -458,51 +469,68 @@ kubectl create configmap redis-connect-config \
 kubectl apply -f non-vault/redis-connect-start.yaml
 ```
 
-## Validate  Environment
+## Validate Environment
+### Validate database admin access
+* port forward from kubernetes service to local port
+```bash
+kubectl port-forward -n demo service/redis-enterprise-database 12000
+kubectl port-forward -n demo service/redis-meta 12001
+```
+* access the redis-enterprise-database (port 12000) and redis-meta (port 12001) using the passwords from demo/getDatabasepw.sh
+```
+demo/getDatabasepw.sh
+redis-cli -p 12000 -a 0BPpoREJ
+>set jason cool
+redis-cli -p 12001 -a 0XyzJPH1
+>set jason uncool
+```
+
 ### Validate redisinsights
 
+* port forward to access redisinsights and each database to connect to
+```bash
+kubectl port-forward -n demo deployment/redisinsight 8001
+
+```
 * from chrome or firefox, open the browser using http://localhost:8001
 * Click "I already have a database"
 * Click "Connect to Redis Database"
 * Create Connection to target redis database with following parameter entries
 
-| Key      | Value                                     |
-|----------|-------------------------------------------|
-| host     | redis-enterprise-database.demo            |
-| port     | 12000 (can get from ./getDatabasepw.sh but is hardcoded) |
-| name     | TargetDB                                  |
-| Username | (leave blank)                             |
-| Password | DrCh7J31 (from ./getDatabasepw.sh above) |
+| Key      | Value                                                       |
+|----------|-------------------------------------------------------------|
+| host     | redis-enterprise-database.demo                              |
+| port     | 12000 (can get from demo/getDatabasepw.sh but is hardcoded) |
+| name     | TargetDB                                                    |
+| Username | (leave blank)                                               |
+| Password | DrCh7J31 (from demo/getDatabasepw.sh above)                 |
 * click ok
 *repeat steps above for metadata database using following parameters
 
-| Key      | Value                                     |
-|----------|-------------------------------------------|
-| host     | redis-meta.demo                           |
-| port     | 12001 (can get from ./getDatabasepw.sh but is hardcoded) |
-| name     | metaDB                                    |
-| Username | (leave blank)                             |
-| Password | FW2mFXEH (from ./getDatabasepw.sh above)  |
+| Key      | Value                                                       |
+|----------|-------------------------------------------------------------|
+| host     | redis-meta.demo                                             |
+| port     | 12001 (can get from demo/getDatabasepw.sh but is hardcoded) |
+| name     | metaDB                                                      |
+| Username | (leave blank)                                               |
+| Password | FW2mFXEH (from demo/getDatabasepw.sh above)                 |
 
-### Validate redis databases
-
-Using the information from getDatabasePw.sh.  Read the authentication parameters and use the returned values for subsequent authentication step, substituting returned values for the password and port
-Grab another new terminal window to runt the port forward command.  (note, need the actual port from getDatabasePw.sh)
-
+### Validate vault access
+Only execute these steps if running with vault 
+* port forward to access the databases from local machine port
+* port forward from kubernetes service to local port
 ```bash
-$DEMO/getDatabasePw.sh
-kubectl port-forward -n demo service/redis-enterprise-database 12000:12000
-kubectl port-forward -n demo service/redis-meta 112001:12001
+kubectl port-forward -n demo service/redis-enterprise-database 12000
+kubectl port-forward -n demo service/redis-meta 12001
 ```
 
 NOTES:  
-* the redis-cli command is using the username and password from the output of the read database command
+* the redis-cli command is using the username and password from the output of the vault read database command
 * the vault read command must be done from the vault terminal 
-  * can log in to the vault container using  ```kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh```
+  * can log in to the vault container using  ```kubectl exec -n vault --stdin=true --tty=true vault-0 -- /bin/sh```
 * From vault for redis-enterprise-database
 
 ```bash
-
 vault read database/creds/redis-enterprise-database
       Key                Value
       ---                -----
@@ -526,21 +554,24 @@ vault read database/creds/redis-meta
 Open a new terminal window  and test each database using the username and password values from the vault read database output
 * redis-enterprise-database
 ```bash
-redis-cli -p 18154
+redis-cli -p 12000
 >AUTH v_root_redis-enterprise-database_sruv9v0fewy2rv4m1oxq_1646252982 blZxlE10AS-zy-UBbjdh
 ```
 * redis-meta
 ```bash
-redis-cli -p 16254
+redis-cli -p 12001
 >AUTH v_root_redis-meta_n2dkafecjttws9mzj9eg_1646411445 Vfo2ajqBvWAVKFyI-ojR
 ```
 
-### Test replication
+### Test redis connect replication
 This section will define the redis-connect job using an API approach.  For more detail on the redis-connect swagger interface, see this
 [demo section](https://github.com/redis-field-engineering/redis-connect-dist/examples/postgres/demo) in redis connection github
 In another terminal, need to port-forward the rest API interface to set up the actual job
+* first get the redis-connect pod name with kubectl get all
+* use the pod name to port-forward the port
 ```bash
-kubectl port-forward pod/redis-connect-59475bcdd4-nwv5v 8282:8282
+kubectl -n redis-connect get all
+kubectl -n redis-connect port-forward pod/redis-connect-59475bcdd4-nwv5v 8282
 ```
 Use the [swagger interface]( http://localhost:8282/swagger-ui/index.html) to define the job and control the job execution
 * Save the job configuration using swagger interface ![swagger](images/swagger1.png)
