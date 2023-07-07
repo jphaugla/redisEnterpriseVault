@@ -114,8 +114,9 @@ pip3 install --global-option=build_ext \
       * scroll down to the Redis Stack for this version and note the versions for timeseries module
       * update [redis-meta.yml](demo/redis-meta.yml) for the correct timeseries version found above
       * Gears is a separate download and installation into the redis nodes so need to adjust gears version in several places
+        * *this is only needed if using RDI*
         * Can find [the latest gears version](https://docs.redis.com/latest/stack/release-notes/redisgears/)
-        * update [redis-enterprise-database.yml](demo/redis-enterprise-database.yml) for the correct gears version
+        * update [redis-enterprise-database.yml](demo/redis-enterprise-database-gears.yml) for the correct gears version
         * update the parameter for the gears version in [main.yml](terraform/ansible-gke)
     * to check the vault versions use [this hashicorp link](https://developer.hashicorp.com/vault/docs/platform/k8s/helm)
   * no need to set the variables in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
