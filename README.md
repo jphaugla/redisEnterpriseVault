@@ -575,10 +575,11 @@ kubectl -n redis-connect port-forward pod/redis-connect-59475bcdd4-nwv5v 8282
 ```
 Use the [swagger interface]( http://localhost:8282/swagger-ui/index.html) to define the job and control the job execution
 * Save the job configuration using swagger interface ![swagger](images/swagger1.png)
-  * click on *POST* Save Job Configuration to bring up the API interface ![API](images/swagger-save-job.png)
+  * click on *QUICK START* 
+  * click on *POST* *SAVE Job Configuration* to bring up the API interface ![API](images/swagger-save-job.png)
   * click on *Try It Out*
   * Enter the jobname of *postgres-job*
-  * Click on *browse* and select the redis-connect/postgres-job.json
+  * Click on *Choose File* and select *redis-connect/postgres-job.json* 
   * Click on *Execute*
 * Insert rows using postgres container
 ```bash
@@ -619,10 +620,10 @@ INSERT INTO public.emp (empno, fname, lname, job, mgr, hiredate, sal, comm, dept
 
 ```bash
 kubectl -n redis-connect get pods
-kubectl -n redis-connect logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent-init
-kubectl -n redis-connect logs redis-connect-postgres-595d6fb5f4-54c6v -c vault-agent
-kubectl -n redis-connect logs redis-connect-postgres-595d6fb5f4-54c6v -c redis-connect
-kubectl -n redis-connect exec --stdin --tty  redis-connect-687bd546fc-44kvc -- /bin/sh
+kubectl -n redis-connect logs pod/redis-connect-5cd54fcddd-8s5pj -c vault-agent-init
+kubectl -n redis-connect logs pod/redis-connect-5cd54fcddd-8s5pj -c vault-agent
+kubectl -n redis-connect logs pod/redis-connect-5cd54fcddd-8s5pj -c redis-connect
+kubectl -n redis-connect exec --stdin --tty  pod/redis-connect-5cd54fcddd-8s5pj -- /bin/sh
 ```
   * log in to the pod and look at log files 
   * there is a debug line in redis-connect-start.yaml that keeps the pod running even if there are connection errors-this is great for debug

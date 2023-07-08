@@ -9,3 +9,10 @@
     kind: Namespace
     state: present
 
+- name: Create a k8s redis-connect service account
+  kubernetes.core.k8s:
+    name: redis-connect
+    namespace: redis-connect
+    api_version: v1
+    kind: sa
+    state: present

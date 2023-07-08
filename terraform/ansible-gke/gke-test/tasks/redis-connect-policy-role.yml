@@ -15,7 +15,6 @@
     pod: vault-0
     command: vault policy write redis-connect-policy /home/vault/vault-redis-connect-policy.hcl
 
-
 - name: create redis connect role
   kubernetes.core.k8s_exec:
     namespace: vault
