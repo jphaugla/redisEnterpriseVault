@@ -19,4 +19,4 @@
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault write auth/kubernetes/role/redis-connect bound_service_account_names=redis-connect bound_service_account_namespaces=redis-connect policies=redis-connect-policy ttl=24h
+    command: vault write auth/kubernetes/role/redis-connect bound_service_account_names=redis-connect bound_service_account_namespaces=redis-connect policies=redis-connect-policy ttl=240h

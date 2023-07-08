@@ -17,10 +17,10 @@
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault write database/roles/redis-enterprise-database db_name=demo-test-rec-redis-enterprise-database creation_statements="{\"role\":\"db1\"}" default_ttl=24h  max_ttl=24h 
+    command: vault write database/roles/redis-enterprise-database db_name=demo-test-rec-redis-enterprise-database creation_statements="{\"role\":\"db1\"}" default_ttl=240h  max_ttl=240h 
 
 - name: create redis  database role
   kubernetes.core.k8s_exec:
     namespace: vault
     pod: vault-0
-    command: vault write database/roles/redis-meta db_name=demo-test-rec-redis-meta creation_statements="{\"role\":\"db2\"}" default_ttl=24h  max_ttl=24h 
+    command: vault write database/roles/redis-meta db_name=demo-test-rec-redis-meta creation_statements="{\"role\":\"db2\"}" default_ttl=240h  max_ttl=240h 
