@@ -172,8 +172,11 @@ the same ansible that is used in the GCK automation of the Redis Enterprise, Pos
 There are a few minor differences but parametrization takes care of the differences.
 
 #### Run ansible OpenShift 
-* First create the openshift cluster with provided script
+* Prepare to run openshift ansible
   * [This script follows these OpenShift on GCP steps](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
+  * Adjust the openshift version in the shell script file [manual.sh](ansible-openshift/manual.sh)
+  * Use the latest openshift version [supported by redis enterprise operator](https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases)
+
 ```bash
 cd ansible-openshift
 ./manual.sh
@@ -181,9 +184,25 @@ cd ansible-openshift
 When the above script finishes it will output an *export KUBECONFIG* command.  Use this command to allow the *oc* and/or *kubectl* commands to work.  These binaries (oc and kubectl) are in the ./ansible-openshift/binaries directory
 #### Run ansible k8s
 Run ansible k8s steps to configure postgres, redis enterprise, etc
-* Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml)
+* Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml).  These should only need to be changed on rerun/error conditions
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
-  *  verify you have the vault, postgres, redis_connect and rdi variable set appropriately
+* it is very important to get the desired redis-enterprise version or the initial install will fail
+* Go to the redis documentation [quick start operator bundle](https://docs.redis.com/latest/kubernetes/deployment/quick-start/#download-the-operator-bundle)
+* Click on the button [releases](https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases)
+* enter the release with the tag (it starts with a v)
+* check the redis enterprise database version and ensure modules have the correct versions
+  * click on the link above containing the v to get redis enterprise database version from the Images section
+  * go to [redis enterprise release notes](https://docs.redis.com/latest/rs/release-notes/) for this database version
+  * scroll down to the Redis Stack for this version and note the versions for timeseries module
+  * update [redis-meta.yml](demo/redis-meta.yml) for the correct timeseries version found above
+  * Gears is a separate download and installation into the redis nodes so need to adjust gears version in several places
+    * *this is only needed if using RDI*
+    * Can find [the latest gears version](https://docs.redis.com/latest/stack/release-notes/redisgears/)
+    * update [redis-enterprise-database.yml](demo/redis-enterprise-database-gears.yml) for the correct gears version
+    * update the parameter for the gears version in [main.yml](terraform/ansible-gke/gke-test/vars/main.yml)
+* to check the vault versions use [this hashicorp link](https://developer.hashicorp.com/vault/docs/platform/k8s/helm)
+  * verify you have the vault, postgres, redis_connect and rdi variable set appropriately
+  * verify the redis_enterprise version
 * Kick off the ansible script
 
 ```bash

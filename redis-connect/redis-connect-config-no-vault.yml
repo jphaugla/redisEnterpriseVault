@@ -321,10 +321,10 @@ data:
      </configuration>
   redisconnect_credentials_jobmanager.properties: |
      jobmanager.username=
-     jobmanager.password=nRl2396j
+     jobmanager.password=
   redisconnect_credentials_postgresql_postgres-job.properties: |
      source.username=postgres
      source.password=jasonrocks
   redisconnect_credentials_redis_postgres-job.properties: |
      target.username=
-     target.password=Tp226e7q
+     target.password=POqRbrfB
