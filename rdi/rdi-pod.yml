@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-di-cli
+  labels:
+    app: redis-di-cli
+spec:
+  containers:
+    - name: redis-di-cli
+      image: docker.io/redislabs/redis-di-cli
+      volumeMounts:
+      - name: config-volume
+        mountPath: /app
+      - name: jobs-volume
+        mountPath: /app/jobs
+  volumes:
+    - name: config-volume
+      configMap:
+        name: redis-di-config
+        optional: true
+    - name: jobs-volume
+      configMap:
+        name: redis-di-jobs
+        optional: true
+
