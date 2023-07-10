@@ -168,7 +168,7 @@ There are several locations for parameters.
 ### OpenShift Automated Instructions
 OpenShift automation does not use terraform at all.  Openshift automation only uses ansible because the actual installation of the OpenShift cluster is automated by Openshift (using terraform internally) by installing client software and using 
 this client to automate the install on GCP.   For simplicity, this GitHub automates this installation using ansible.  Following the use of ansible to install OpenShift, 
-the same ansible that is used in the GCK automation of the Redis Enterprise, PostgreSQL, Hashicorp Vault, and Redis Connect is also used with OpenShift.
+the same ansible that is used in the GKE automation of the Redis Enterprise, PostgreSQL, Hashicorp Vault, and Redis Connect is also used with OpenShift.
 There are a few minor differences but parametrization takes care of the differences.
 
 #### Run ansible OpenShift 
