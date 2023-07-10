@@ -188,6 +188,7 @@ Run ansible k8s steps to configure postgres, redis enterprise, etc
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
 * it is very important to know the desired redis-enterprise version to have the correct module versions as RDI needs redis gears and redis connect needs timeseries
 * This openshift install doesn't really allow the choice of the redis operator and redis database versions.  Install relies on cloning the redis-enterprise k8s repository and using the version in this repository.  If you want an older version, need to clone that earlier version. 
+  * NOTE:  redis operator install steps changed after 6.2.18-41.  This ansible script will no longer work with 6.2.18-41 and earlier versions.
   * to clone use *git clone https://github.com/RedisLabs/redis-enterprise-k8s-docs.git*
   * update the redis operator version in [manual_run_openshift](terraform/ansible-gke/manual_run_openshift.sh)
 * To see the redis operator version in the github, check this file *openshift.bundle.yaml* and search for this string in the file *redis-enterprise-operator:*

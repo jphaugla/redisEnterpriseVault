@@ -10,15 +10,6 @@
 - name: Verify using demo
   shell: "{{ oc_path }} project demo"
 
-- name: Apply scc.yaml file
-  shell: "{{ oc_path }} apply -f {{ redis_enterprise_github }}/openshift/scc.yaml"
-
-- name: add operator permission for operator
-  shell: "{{ oc_path }} adm policy add-scc-to-user redis-enterprise-scc system:serviceaccount:demo:redis-enterprise-operator"
-
-- name: add operator permission for rec
-  shell: "{{ oc_path }} adm policy add-scc-to-user redis-enterprise-scc system:serviceaccount:demo:test-rec"
-
 - name: Apply bundle
   shell: "{{ oc_path }} apply -f {{ redis_enterprise_github }}/openshift.bundle.yaml"
 
@@ -34,6 +25,12 @@
     namespace: demo
     wait_sleep: 10
     wait_timeout: 360
+
+- name: Apply scc.yaml file
+  shell: "{{ oc_path }} apply -f {{ redis_enterprise_github }}/openshift/scc.yaml"
+
+- name: add operator permission for rec
+  shell: "{{ oc_path }} adm policy add-scc-to-user redis-enterprise-scc-v2 system:serviceaccount:demo:test-rec"
 
 - name: Create a redis enterprise cluster test-rec
   kubernetes.core.k8s:
