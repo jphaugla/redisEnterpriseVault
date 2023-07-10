@@ -1,4 +1,4 @@
-install_openshift: False
+install_openshift: True
 create_install_config: True
 install_openshift_cluster: True
 
@@ -6,7 +6,7 @@ cluster_name: jph-openshift
 gcp_region: us-central1-c
 gcp_project: central-beach-194106
 openshift_installer_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
-openshift_version: 4.11.3
+openshift_version: latest-4.12
 worker_machine_type: e2-standard-8
 master_machine_type: e2-standard-4
 worker_replicas: 3

@@ -186,11 +186,14 @@ When the above script finishes it will output an *export KUBECONFIG* command.  U
 Run ansible k8s steps to configure postgres, redis enterprise, etc
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml).  These should only need to be changed on rerun/error conditions
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
-* it is very important to get the desired redis-enterprise version or the initial install will fail
-* Go to the redis documentation [quick start operator bundle](https://docs.redis.com/latest/kubernetes/deployment/quick-start/#download-the-operator-bundle)
-* Click on the button [releases](https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases)
-* enter the release with the tag (it starts with a v)
+* it is very important to know the desired redis-enterprise version to have the correct module versions as RDI needs redis gears and redis connect needs timeseries
+* This openshift install doesn't really allow the choice of the redis operator and redis database versions.  Install relies on cloning the redis-enterprise k8s repository and using the version in this repository.  If you want an older version, need to clone that earlier version. 
+  * to clone use *git clone https://github.com/RedisLabs/redis-enterprise-k8s-docs.git*
+  * update the redis operator version in [manual_run_openshift](terraform/ansible-gke/manual_run_openshift.sh)
+* To see the redis operator version in the github, check this file *openshift.bundle.yaml* and search for this string in the file *redis-enterprise-operator:*
 * check the redis enterprise database version and ensure modules have the correct versions
+  *Click on the button [releases](https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases)
+  * enter the release with the tag (it starts with a v)
   * click on the link above containing the v to get redis enterprise database version from the Images section
   * go to [redis enterprise release notes](https://docs.redis.com/latest/rs/release-notes/) for this database version
   * scroll down to the Redis Stack for this version and note the versions for timeseries module
@@ -206,6 +209,8 @@ Run ansible k8s steps to configure postgres, redis enterprise, etc
 * Kick off the ansible script
 
 ```bash
+# better to use the full path here from KUBECONFIG returned above
+export KUBECONFIG=./ansible-openshift/install-files/auth/kubeconfig
 cd  terraform/ansible-gke
 ./manual_run_openshift.sh
 ```
