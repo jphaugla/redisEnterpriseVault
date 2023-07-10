@@ -46,7 +46,7 @@ Optional path is included to deploy without Vault.
 
 ## Overview
 Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces 
-will run in separate namespaces in a GKE cluster.
+will run in separate namespaces in a GKE or Openshift cluster 
 ![Solution Diagram](images/redis_connect_k8s_postgres.png)
 
 ## Important Links
@@ -135,6 +135,8 @@ cd terraform/test
 terraform init
 terraform apply --auto-approve
 ```
+#### GKE console access
+GKE console access is availble through the GCP console kubernetes link.  The cluster name comes from the cluster_name_final terraform variable which is held in [](test/main.tf)
 
 #### Terraform destroy
 * to remove everything
@@ -182,6 +184,9 @@ cd ansible-openshift
 ./manual.sh
 ```
 When the above script finishes it will output an *export KUBECONFIG* command.  Use this command to allow the *oc* and/or *kubectl* commands to work.  These binaries (oc and kubectl) are in the ./ansible-openshift/binaries directory
+* Opeshift console access is available using * https://console-openshift-console.apps.<ocp-cluster_name>.<openshift_cluster_base_domain>*
+  * find these values in the [vars main yaml file](ansible-openshift/gcp/vars/main.yml)
+* Username is kubeadmin and the password is in the file [](ansible-openshift/install-files/auth/kubeadmin-password)
 #### Run ansible k8s
 Run ansible k8s steps to configure postgres, redis enterprise, etc
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml).  These should only need to be changed on rerun/error conditions
