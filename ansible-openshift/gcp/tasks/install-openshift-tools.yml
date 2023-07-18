@@ -7,13 +7,13 @@
     mode: '0755'
 
 - name: Get install binary
-  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-install-mac-4*.tar.gz
+  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-install-mac-{{arm_prefix}}*.tar.gz
 
 - name: Untar install file
-  shell: tar zxvf binaries/openshift-install-mac-4*.tar.gz -C binaries
+  shell: tar zxvf binaries/openshift-install-mac-*.tar.gz -C binaries
 
 - name: Get client binary
-  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-client-mac-4*.tar.gz
+  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-client-mac-{{arm_prefix}}*.tar.gz
 
 - name: Untar client file
-  shell: tar zxvf binaries/openshift-client-mac-4*.tar.gz -C binaries
+  shell: tar zxvf binaries/openshift-client-mac-*.tar.gz -C binaries
