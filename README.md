@@ -176,8 +176,17 @@ There are a few minor differences but parametrization takes care of the differen
 #### Run ansible OpenShift 
 * Prepare to run openshift ansible
   * [This script follows these OpenShift on GCP steps](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
-  * Adjust the openshift version in the shell script file [manual.sh](ansible-openshift/manual.sh)
   * Use the latest openshift version [supported by redis enterprise operator](https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases)
+  * Update the variables for your environment. Set your own cluster, etc. name. Get your own service account key and reference that.
+```bash
+cp ansible-openshift/gcp/vars/main.yml.template ansible-openshift/gcp/vars/main.yml
+```
+Edit `main.yml` to set your environment
+
+You'll also need to export the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to your service account key, e.g.,
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/Users/<your home dir>/.gcp/central-beach-194106-abcdefg.json
+```
 
 ```bash
 cd ansible-openshift
