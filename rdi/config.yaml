@@ -9,7 +9,7 @@ connections:
     # User of the Redis database to which Redis Data Integration will write the processed data
     # user: 
     # Password (if user is omitted, use this as the default database password)
-    password: 1Xb52V8g
+    password: WHffEoLq
     # In case of secured password
     #password: ${secrets:target-password}
     # TLS

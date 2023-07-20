@@ -6,14 +6,28 @@
     state: directory
     mode: '0755'
 
-- name: Get install binary
-  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-install-mac-{{arm_prefix}}.tar.gz
+- name: Get install binary if mac arm based machine
+  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-install-mac-arm64.tar.gz
+  when:
+    - arm|bool
+
+- name: Get install binary if not mac arm based machine - assumes is default amd64
+  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-install-mac.tar.gz
+  when:
+    - not arm|bool
 
 - name: Untar install file
-  shell: tar zxvf binaries/openshift-install-mac-{{arm_prefix}}*.tar.gz -C binaries
+  shell: tar zxvf binaries/openshift-install-mac*.tar.gz -C binaries
 
-- name: Get client binary
-  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-client-mac-{{arm_prefix}}.tar.gz
+- name: Get client binary if mac arm based machine
+  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-client-mac-arm64.tar.gz
+  when:
+    - arm|bool
+
+- name: Get client binary if not mac arm based machine - assumes is default amd64
+  shell: wget -r -l1 -np -nd  "{{ openshift_installer_url }}"/"{{ openshift_version }}" -P binaries -A openshift-client-mac.tar.gz
+  when:
+    - not arm|bool
 
 - name: Untar client file
-  shell: tar zxvf binaries/openshift-client-mac-{{arm_prefix}}*.tar.gz -C binaries
+  shell: tar zxvf binaries/openshift-client-mac*.tar.gz -C binaries

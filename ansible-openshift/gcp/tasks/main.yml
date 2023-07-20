@@ -6,14 +6,14 @@
 - name: Install open shift to laptop
   include_tasks: install-openshift-tools.yml
   when:
-    - install_openshift
+    - install_openshift|bool
 
 - name: 
   include_tasks: create-install-config.yml
   when:
-    - create_install_config
+    - create_install_config|bool
 
 - name: 
   include_tasks: install-openshift-cluster.yml
   when:
-    - install_openshift_cluster
+    - install_openshift_cluster|bool
