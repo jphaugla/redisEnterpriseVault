@@ -181,7 +181,7 @@ There are a few minor differences but parametrization takes care of the differen
 ```bash
 cp ansible-openshift/gcp/vars/main.yml.template ansible-openshift/gcp/vars/main.yml
 ```
-Edit `main.yml` to set your environment
+Edit `main.yml` to set your environment. There are many `REPLACEME` entries you must replace with your environment.
 
 You'll also need to export the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to your service account key, e.g.,
 ```bash

@@ -2,14 +2,14 @@ install_openshift: True
 create_install_config: True
 install_openshift_cluster: True
 
-cluster_name: epreston-openshift
-gcp_region: us-central1
-gcp_zone: us-central1-a
+cluster_name: REPLACEME
+gcp_region: REPLACEMEE
+gcp_zone: REPLACEME
 gcp_project: central-beach-194106
 gcp_cred_kind: serviceaccount
-gcp_cred_file: /Users/eric.preston/.gcp/central-beach-194106-43b416572da2.json
-network: epreston-gke-network
-subnet: epreston-gke-subnet
+gcp_cred_file: REPLACEME
+network: REPLACEME
+subnet: REPLACEME
 openshift_installer_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
 openshift_version: stable-4.12
 worker_machine_type: e2-standard-8
@@ -19,10 +19,10 @@ master_replicas: 3
 cluster_cidr: 10.128.0.0/14
 machine_cidr: 10.0.0.0/16
 service_cidr: 172.30.0.0/16
-openshift_pull_secret_file: /Users/eric.preston/.openshift/pull_secret.txt
+openshift_pull_secret_file: REPLACEME
 gcp_public_dns_zone_name: openshift.demo.redislabs.com
-gcp_service_account: /Users/eric.preston/.gcp/central-beach-194106-43b416572da2.json
+gcp_service_account: REPLACEME
 GOOGLE_APPLICATION_CREDENTIALS: "{{ gcp_service_account }}"
-ssh_key_file: /Users/eric.preston/.ssh/google_compute_engine.pub
+ssh_key_file: /Users/REPLACEME/.ssh/google_compute_engine.pub
 arm_prefix: arm64
 ansible_python_interpreter: /opt/homebrew/bin/python3
