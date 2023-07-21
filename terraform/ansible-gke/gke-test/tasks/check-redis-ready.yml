@@ -1,8 +1,8 @@
 - name: Get deployment services rigger
-  shell: "kubectl wait deployment -n demo test-rec-services-rigger --for condition=Available=True --timeout=120s"
+  shell: "kubectl wait deployment -n demo test-rec-services-rigger --for condition=Available=True --timeout=220s"
 
 - name: Get deployment status redis operator
-  shell: "kubectl wait deployment -n demo redis-enterprise-operator --for condition=Available=True --timeout=120s"
+  shell: "kubectl wait deployment -n demo redis-enterprise-operator --for condition=Available=True --timeout=220s"
 
 - name: Wait for pod0
   shell: "kubectl wait pod/test-rec-0 -n demo --for condition=ready --timeout=220s"
