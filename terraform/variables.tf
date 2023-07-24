@@ -26,6 +26,10 @@ variable "redis_enterprise_version" {
     description = "The redis enterprise operator version.  Can find versions here-https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases"
 }
 
+variable "gears_version" {
+    description = "The gears version.  Can find versions here-https://docs.redis.com/latest/rs/release-notes/"
+}
+ 
 variable "gke_release_channel" {
     description = "The gke release channel.  Can be RAPID, REGULAR, or STABLE"
 }
