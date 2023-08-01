@@ -1,11 +1,7 @@
-variable "gke_num_nodes" {
-  description = "number of gke nodes per zone"
-}
-
 # GKE cluster
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name_final
-  location = var.region
+  location = var.zone
   
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
@@ -13,7 +9,7 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  network    = local.vpc_name
+  network    = google_compute_network.vpc_network.id
   subnetwork = local.vpc_subnet
   release_channel {
     channel = var.gke_release_channel
@@ -23,14 +19,19 @@ resource "google_container_cluster" "primary" {
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
   name       = "${google_container_cluster.primary.name}"
-  location   = var.region
+  location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = var.gke_num_nodes
+  initial_node_count = 3
+  autoscaling {
+    min_node_count = 3
+    max_node_count = 5
+  }
 
   node_config {
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/cloud-platform",
     ]
 
     labels = {

@@ -1,0 +1,9 @@
+- name: Apply dnstools
+  kubernetes.core.k8s:
+    namespace: demo
+    src: ../../tools/dnstools.yml
+
+- name: Apply memtier
+  kubernetes.core.k8s:
+    namespace: demo
+    src: ../../tools/memtier.yml

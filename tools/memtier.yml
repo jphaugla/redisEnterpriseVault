@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-benchmark
+  labels:
+    app: redis-benchmark
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-benchmark
+  template:
+    metadata:
+      labels:
+        app: redis-benchmark
+    spec:
+      containers:
+      - name: benchmark
+        image: redislabs/memtier_benchmark:b1b1d10
+        command: ["memtier_benchmark"]
+        args: ["-d", "10", "-n", "20000000", "--pipeline=50", "-a", "$(REDIS_PASSWORD)", "-s", "$(REDIS_SERVER)", "-p", "$(REDIS_PORT)"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "128Mi"
+        env:
+         - name: REDIS_SERVER
+           value: redis-enterprise-database
+         - name: REDIS_PORT
+           valueFrom:
+                secretKeyRef:
+                  key: port
+                  name: redb-redis-enterprise-database
+         - name: REDIS_PASSWORD
+           valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: redb-redis-enterprise-database

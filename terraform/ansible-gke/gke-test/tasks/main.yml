@@ -4,7 +4,7 @@
 ---
 
 - name: "Connect to gke cluster (update kubeconfig)"
-  shell: "gcloud container clusters get-credentials {{ cluster_name }} --region {{ gcp_region }} --project {{ gcp_project }}"
+  shell: "gcloud container clusters get-credentials {{ cluster_name }} --zone {{ gcp_zone }} --project {{ gcp_project }}"
   when: 
     - gke|bool
 
@@ -30,11 +30,6 @@
   when:
     - create_redis|bool
  
-- name: create redisinsights
-  include_tasks: create-redisinsights.yml
-  when:
-    - create_redis|bool
-
 #  this is needed for rdi 
 #  removed gears from database creation if rdi not needed
 - name: install redis gears for rdi
@@ -59,6 +54,16 @@
   when:
     - create_postgres_database|bool
     - postgres|bool
+
+- name: create redisinsights
+  include_tasks: create-redisinsights.yml
+  when:
+    - create_redis|bool
+
+- name: create extra-tools
+  include_tasks: create-tools.yml
+  when:
+    - create_redis|bool
 
 - name: Create vault gke
   include_tasks: create-vault.yml

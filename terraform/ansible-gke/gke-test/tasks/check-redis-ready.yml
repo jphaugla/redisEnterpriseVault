@@ -1,3 +1,7 @@
+- name: wait 15 second
+  pause:
+    seconds: 15
+
 - name: Get deployment services rigger
   shell: "kubectl wait deployment -n demo test-rec-services-rigger --for condition=Available=True --timeout=220s"
 
