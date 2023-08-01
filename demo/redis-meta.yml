@@ -4,7 +4,7 @@ metadata:
   name: redis-meta
 spec:
   memorySize: 500MB
-  persistence: "snapshotEvery1Hour"
+  persistence: "aofEverySecond"
   databasePort: 12001
   rolesPermissions:
   - type: redis-enterprise
