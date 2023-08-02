@@ -18,7 +18,7 @@ spec:
       - name: benchmark
         image: redislabs/memtier_benchmark:b1b1d10
         command: ["memtier_benchmark"]
-        args: ["-d", "10", "-n", "20000000", "--pipeline=50", "-a", "$(REDIS_PASSWORD)", "-s", "$(REDIS_SERVER)", "-p", "$(REDIS_PORT)"]
+        args: ["-d", "10", "-n", "2000", "--pipeline=50", "-a", "$(REDIS_PASSWORD)", "-s", "$(REDIS_SERVER)", "-p", "$(REDIS_PORT)"]
         resources:
           requests:
             cpu: "1"

@@ -9,7 +9,7 @@ module "mymodule" {
    region 		= "us-central1"
    cluster_name_final   = "jph-gke"
    zone 		= "us-central1-a"
-   redis_enterprise_version = "v6.4.2-6"
+   redis_enterprise_version = "v6.4.2-8"
    vault_chart_version  = "0.24.0"
    gears_version        = "1.2.6"
    gke_release_channel  = "STABLE"
