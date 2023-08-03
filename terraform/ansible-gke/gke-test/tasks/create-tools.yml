@@ -2,8 +2,8 @@
   kubernetes.core.k8s:
     namespace: demo
     src: ../../tools/dnstools.yml
-
-- name: Apply memtier
-  kubernetes.core.k8s:
-    namespace: demo
-    src: ../../tools/memtier.yml
+#   don't deploy memtier automatically
+#- name: Apply memtier
+#  kubernetes.core.k8s:
+#    namespace: demo
+#    src: ../../tools/memtier.yml

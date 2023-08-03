@@ -683,3 +683,6 @@ this should be output from the df -h
 ![df ouput](images/redis-connect-mounts.png)
   * Ensure each credential file is named correctly
   * Test the username/password from the credential file to ensure the connection works from the respective database
+#### Troubleshooting k8s DNS
+The install process automatically creates a dns utils pod to debug any networking issues
+To debug use [these notes:](https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/)

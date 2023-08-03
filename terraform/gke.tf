@@ -26,6 +26,10 @@ resource "google_container_node_pool" "primary_nodes" {
     min_node_count = 3
     max_node_count = 5
   }
+  timeouts {
+    create = "60m"
+    delete = "60m"
+  }
 
   node_config {
     oauth_scopes = [
