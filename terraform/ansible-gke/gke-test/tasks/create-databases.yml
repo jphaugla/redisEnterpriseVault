@@ -17,6 +17,10 @@
     command: curl -v -k -u "{{lookup('file', '../../temp/cluster_un.txt')}}":"{{lookup('file', '../../temp/cluster_pw.txt')}}" -X POST https://localhost:9443/v1/roles -H Content-type:application/json  -d '{"name":"db2","management":"admin"}'
   register: curl_out2
 
+- name: wait to ensure gears module is recognized as installed
+  pause:
+    seconds: 60
+
 - name: Apply redis enterprise database with gears for rdi
   kubernetes.core.k8s:
     namespace: demo

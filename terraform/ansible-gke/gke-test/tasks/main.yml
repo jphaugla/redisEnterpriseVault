@@ -30,6 +30,11 @@
   when:
     - create_redis|bool
  
+- name: enable admission controller
+  include_tasks: enable-admission-controller.yml
+  when:
+    - create_redis|bool
+
 #  this is needed for rdi 
 #  removed gears from database creation if rdi not needed
 - name: install redis gears for rdi

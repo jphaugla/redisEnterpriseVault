@@ -1,0 +1,14 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+- name: use template to create webhook
+  template:
+    src: gke-test/templates/modified-webhook.j2
+    dest: ../../demo/modified-webhook.yml
+
+- name: apply the webhook
+  shell: kubectl -n demo apply -f ../../demo/webhook.yml
+
+- name: apply the modified webhook with CERT
+  shell: kubectl -n demo patch ValidatingWebhookConfiguration redis-enterprise-admission --patch "{{lookup('file', '../../demo/modified-webhook.yml')}}"

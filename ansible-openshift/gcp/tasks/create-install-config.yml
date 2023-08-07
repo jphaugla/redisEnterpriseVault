@@ -3,11 +3,11 @@
 
 - name: Creates directory
   file:
-    path: install-files
+    path: "{{install_files_directory}}"
     state: directory
     mode: '0755'
 
 - name: create install-config.yaml
   template:
     src: ./gcp/templates/install-config-starter.j2
-    dest: ./install-files/install-config.yaml
+    dest: ./{{install_files_directory}}/install-config.yaml

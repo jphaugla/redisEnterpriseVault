@@ -2,4 +2,4 @@
 # google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
 
 - name: run openshift install
-  shell: ./binaries/openshift-install create cluster --dir install-files
+  shell: ./binaries/openshift-install create cluster --dir "{{install_files_directory}}"

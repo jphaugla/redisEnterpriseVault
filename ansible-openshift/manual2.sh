@@ -1,0 +1,1 @@
+ansible-playbook  -vvvv --extra-vars cluster_state=present playbook.yml -e 'install_openshift=False' -e 'cluster_name=jph-openshift-2' -e 'network=jph-gke-network-2' -e 'subnet=jph-gke-subnet-2' -e 'cluster_cidr=10.124.0.0/14' -e 'machine_cidr=10.1.0.0/16' -e 'install_files_directory=install-files-2' -e 'service_cidr=172.29.0.0/16'

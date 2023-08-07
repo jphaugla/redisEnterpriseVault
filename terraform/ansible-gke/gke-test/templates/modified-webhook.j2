@@ -1,0 +1,5 @@
+webhooks:
+- name: redisenterprise.admission.redislabs
+  clientConfig:
+    caBundle: {{ lookup('file', '../temp/admission_cert.txt') }}
+  admissionReviewVersions: ["v1beta1"]
