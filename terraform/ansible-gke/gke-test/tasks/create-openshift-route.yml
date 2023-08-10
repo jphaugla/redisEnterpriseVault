@@ -1,0 +1,11 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+- name: use template to create webhook
+  template:
+    src: gke-test/templates/create-openshift-route.j2
+    dest: ../../demo/create-openshift-route.sh
+
+- name: apply the webhook
+  shell: ../../demo/create-openshift-route.sh

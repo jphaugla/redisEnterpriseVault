@@ -8,9 +8,23 @@
 - name: Get deployment status redis operator
   shell: "kubectl wait deployment -n demo redis-enterprise-operator --for condition=Available=True --timeout=220s"
 
+- name: wait 10 second
+  pause:
+    seconds: 10
+
 - name: Wait for pod0
   shell: "kubectl wait pod/{{rec_name}}-0 -n demo --for condition=ready --timeout=220s"
+
+- name: wait 10 second
+  pause:
+    seconds: 10
+
 - name: Wait for pod1
   shell: "kubectl wait pod/{{rec_name}}-1 -n demo --for condition=ready --timeout=220s"
+
+- name: wait 10 second
+  pause:
+    seconds: 10
+
 - name: Wait for pod2
   shell: "kubectl wait pod/{{rec_name}}-2 -n demo --for condition=ready --timeout=220s"
