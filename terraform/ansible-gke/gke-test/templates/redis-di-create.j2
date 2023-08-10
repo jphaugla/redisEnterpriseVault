@@ -1,1 +1,1 @@
-redis-di create --cluster-host test-rec.demo.svc.cluster.local --cluster-api-port 9443 --cluster-user {{ lookup('file', '../temp/cluster_un.txt') }} --cluster-password {{ lookup('file', '../temp/cluster_pw.txt') }} --rdi-port 12002 --rdi-password {{postgres_pw}} --silent
+redis-di create --cluster-host {{rec_name}}.demo.svc.cluster.local --cluster-api-port 9443 --cluster-user {{ lookup('file', '../temp/cluster_un.txt') }} --cluster-password {{ lookup('file', '../temp/cluster_pw.txt') }} --rdi-port 12002 --rdi-password {{postgres_pw}} --silent

@@ -14,8 +14,20 @@ variable "region" {
     description = "Region to be used with the network and resources."
 }
 
+variable "dns_domain" {
+    description = "DNS suffix name to for haproxy dns resolution"
+}
+
+variable "dns_name" {
+    description = "DNS zone name to add the proxy dns record into"
+}
+
 variable "cluster_name_final" {
     description = "name of the GKE cluster"
+}
+
+variable "rec_name" {
+    description = "name of the redis enterprise cluster.  also know as the rec"
 }
 
 variable "zone" {

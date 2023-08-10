@@ -30,16 +30,16 @@
   shell: "{{ oc_path }} apply -f {{ redis_enterprise_github }}/openshift/scc.yaml"
 
 - name: add operator permission for rec
-  shell: "{{ oc_path }} adm policy add-scc-to-user redis-enterprise-scc-v2 system:serviceaccount:demo:test-rec"
+  shell: "{{ oc_path }} adm policy add-scc-to-user redis-enterprise-scc-v2 system:serviceaccount:demo:{{rec_name}}"
 
-- name: Create a redis enterprise cluster test-rec
+- name: Create a redis enterprise cluster rec
   kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: app.redislabs.com/v1
       kind: RedisEnterpriseCluster
       metadata:
-        name: test-rec
+        name: "{{rec_name}}"
         namespace: demo
       spec:
         nodes: 3
@@ -52,7 +52,7 @@
   kubernetes.core.k8s_info:
     kind: rec
     wait: yes
-    name: test-rec
+    name: "{{rec_name}}"
     namespace: demo
     wait_sleep: 10
     wait_timeout: 360

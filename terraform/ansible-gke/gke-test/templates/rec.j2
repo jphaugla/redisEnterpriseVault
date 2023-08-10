@@ -1,0 +1,9 @@
+spec:
+  nodes: 3
+  ingressOrRouteSpec:
+    apiFqdnUrl: api-{{rec_name}}-demo.{{cluster_name}}.{{dns_domain}}
+    dbFqdnSuffix: -db-{{rec_name}}-demo.{{cluster_name}}.{{dns_domain}}
+    ingressAnnotations:
+      kubernetes.io/ingress.class: haproxy
+      ingress.kubernetes.io/ssl-passthrough: "true"
+    method: ingress

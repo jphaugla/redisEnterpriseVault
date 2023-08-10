@@ -1,0 +1,9 @@
+spec:
+  nodes: 3
+  ingressOrRouteSpec:
+    apiFqdnUrl: api-test-rec-1-demo.jph-gke.demo.redislabs.com
+    dbFqdnSuffix: -db-test-rec-1-demo.jph-gke.demo.redislabs.com
+    ingressAnnotations:
+      kubernetes.io/ingress.class: haproxy
+      ingress.kubernetes.io/ssl-passthrough: "true"
+    method: ingress

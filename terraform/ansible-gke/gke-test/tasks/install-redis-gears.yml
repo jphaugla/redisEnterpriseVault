@@ -6,7 +6,7 @@
 - name: downlaod ubuntu gears
   kubernetes.core.k8s_exec:
     namespace: demo
-    pod: test-rec-0
+    pod: "{{rec_name}}-0"
     command: curl -s https://redismodules.s3.amazonaws.com/redisgears/redisgears_python.Linux-ubuntu18.04-x86_64.{{gears_version}}.zip -o /tmp/redis-gears.zip
   register: curl_out
   when:
@@ -15,7 +15,7 @@
 - name: downlaod redhat 8 gears
   kubernetes.core.k8s_exec:
     namespace: demo
-    pod: test-rec-0
+    pod: "{{rec_name}}-0"
     command: curl -s https://redismodules.s3.amazonaws.com/redisgears/redisgears_python.Linux-rhel8-x86_64.{{gears_version}}.zip -o /tmp/redis-gears.zip
   register: curl_out
   when:
@@ -24,6 +24,6 @@
 - name: install gears to the cluster
   kubernetes.core.k8s_exec:
     namespace: demo
-    pod: test-rec-0
+    pod: "{{rec_name}}-0"
     command: curl -v -k -s -u "{{lookup('file', '../../temp/cluster_un.txt')}}":"{{lookup('file', '../../temp/cluster_pw.txt')}}" -F "module=@/tmp/redis-gears.zip" https://localhost:9443/v2/modules
   register: curl_out2

@@ -30,11 +30,6 @@
   when:
     - create_redis|bool
  
-- name: enable admission controller
-  include_tasks: enable-admission-controller.yml
-  when:
-    - create_redis|bool
-
 #  this is needed for rdi 
 #  removed gears from database creation if rdi not needed
 - name: install redis gears for rdi
@@ -191,3 +186,25 @@
     - create_debezium|bool
     - rdi|bool
 
+- name: enable admission controller
+  include_tasks: enable-admission-controller.yml
+  when:
+    - redis_additions|bool
+
+- name: create openshift route
+  include_tasks: create-openshift-route.yml
+  when:
+    - redis_additions|bool
+    - not gke|bool
+
+- name: create gke haproxy
+  include_tasks: create-ha-proxy.yml
+  when:
+    - redis_additions|bool
+    - gke|bool
+
+- name: create gke haproxy dns
+  include_tasks: create-ha-dns.yml
+  when:
+    - ha_dns|bool
+    - gke|bool

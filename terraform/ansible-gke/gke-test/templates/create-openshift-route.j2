@@ -1,0 +1,6 @@
+kubectl patch rec {{rec_name}} --type merge --patch "{\"spec\": \
+    {\"ingressOrRouteSpec\": \
+      {\"apiFqdnUrl\": \"api-{{rec_name}}-demo.apps.jphaugla.openshift.demo.redislabs.com\", \
+      \"dbFqdnSuffix\": \"-db-{{rec_name}}-demo.apps.jphaugla.openshift.demo.redislabs.com\", \
+      \"method\": \"openShiftRoute\"}}}"
+

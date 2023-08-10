@@ -1,8 +1,10 @@
-#  these boolean variables can be set true or false to control execution of terraform tasks
+#  these boolean variables can be set true or true to control execution of terraform tasks
 #   in the ../tasks directory, the main.yml file uses these values to control execution
 #   these variable should be used for doing selective re-run of the ansible jobs.  Otherwise, no need to change
 create_redis: true
 install_redis_gears: true
+redis_additions: true
+ha_dns: true
 create_redis_databases: true
 create_postgres: true
 create_postgres_database: true

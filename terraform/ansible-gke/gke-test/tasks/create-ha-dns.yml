@@ -1,0 +1,17 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+- name: get haproxy ip address
+  shell: "kubectl -n demo get svc haproxy-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}'"
+  register: haproxy_ip
+
+- name: save ha_proxy_ip
+  copy:
+    content: "{{ haproxy_ip.stdout }}"
+    dest: temp/ha_proxy_ip.txt
+
+- name: "create dns record"
+  shell: "gcloud dns record-sets create *.{{cluster_name}}.{{dns_domain}} --zone={{dns_name}} --type=A --ttl=10 --rrdatas={{haproxy_ip.stdout}} --project={{gcp_project}}"
+  when:
+    - gke|bool

@@ -1,0 +1,32 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: Add haproxy repo
+  kubernetes.core.helm_repository:
+    name: haproxy-ingress
+    repo_url: "https://haproxy-ingress.github.io/charts"
+
+- name:  install haproxy from haproxy repo
+  kubernetes.core.helm:
+    name: haproxy-ingress
+    chart_ref: haproxy-ingress/haproxy-ingress
+    chart_version: "0.14.2"
+    release_namespace: demo
+    values_files: ../../demo/haproxy-ingress-values.yaml
+
+- name: use template to create rec patch for ha-proxy
+  template:
+    src: gke-test/templates/rec.j2
+    dest: ../../demo/rec.yaml
+
+- name: apply rec patch
+  shell: "kubectl -n demo patch rec {{rec_name}} --type merge --patch-file ../../demo/rec.yaml"
+
+- name: Wait for haproxy
+  shell: "kubectl -n demo rollout status deployment haproxy-ingress --timeout=100s"
+
+- name: wait 20 second
+  pause:
+    seconds: 20
