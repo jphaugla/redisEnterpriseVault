@@ -6,6 +6,7 @@
   template:
     src: gke-test/templates/create-openshift-route.j2
     dest: ../../demo/create-openshift-route.sh
+    mode: '755'
 
 - name: apply the webhook
   shell: ../../demo/create-openshift-route.sh

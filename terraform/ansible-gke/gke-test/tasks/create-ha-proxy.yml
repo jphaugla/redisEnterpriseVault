@@ -20,6 +20,7 @@
   template:
     src: gke-test/templates/rec.j2
     dest: ../../demo/rec.yaml
+    mode: '755'
 
 - name: apply rec patch
   shell: "kubectl -n demo patch rec {{rec_name}} --type merge --patch-file ../../demo/rec.yaml"

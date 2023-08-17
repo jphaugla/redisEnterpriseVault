@@ -7,6 +7,7 @@
   template:
     src: gke-test/templates/redis-connect-start.j2
     dest: ../../redis-connect/redis-connect-config-no-vault.yml
+    mode: '755'
 
 - name: create config map
   kubernetes.core.k8s:

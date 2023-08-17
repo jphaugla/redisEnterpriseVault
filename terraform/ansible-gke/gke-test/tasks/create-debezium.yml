@@ -12,6 +12,7 @@
   template:
     src: gke-test/templates/application.properties.j2
     dest: ../../rdi/application.properties
+    mode: '755'
 
 - name: create rdi config map
   shell: kubectl -n rdi create configmap debezium-config --from-file=../../rdi/application.properties

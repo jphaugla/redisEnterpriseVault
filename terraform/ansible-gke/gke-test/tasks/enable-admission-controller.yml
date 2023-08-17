@@ -6,6 +6,7 @@
   template:
     src: gke-test/templates/modified-webhook.j2
     dest: ../../demo/modified-webhook.yml
+    mode: '755'
 
 - name: apply the webhook
   shell: kubectl -n demo apply -f ../../demo/webhook.yml

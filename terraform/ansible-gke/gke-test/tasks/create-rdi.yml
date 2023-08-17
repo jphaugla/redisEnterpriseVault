@@ -12,6 +12,7 @@
   template:
     src: gke-test/templates/rdi-config.j2
     dest: ../../rdi/config.yaml
+    mode: '755'
 
 - name: create rdi config map
   shell: kubectl -n rdi create configmap redis-di-config --from-file=../../rdi/config.yaml
@@ -20,13 +21,13 @@
   template:
     src: gke-test/templates/redis-di-create.j2
     dest: ../../rdi/redis-di-create.sh
-    mode: 0755
+    mode: '755'
 
 - name: use template to define rdi-deploy-statement
   template:
     src: gke-test/templates/redis-di-deploy.j2
     dest: ../../rdi/redis-di-deploy.sh
-    mode: 0755
+    mode: '755'
 
 - name: wait 5 second
   pause:
