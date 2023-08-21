@@ -197,6 +197,12 @@
     - redis_additions|bool
     - not gke|bool
 
+- name: create openshift dns
+  include_tasks: create-openshift-dns.yml
+  when:
+    - dns|bool
+    - not gke|bool
+
 - name: create gke haproxy
   include_tasks: create-ha-proxy.yml
   when:
@@ -206,5 +212,22 @@
 - name: create gke haproxy dns
   include_tasks: create-ha-dns.yml
   when:
-    - ha_dns|bool
+    - dns|bool
     - gke|bool
+
+- name: create rerc secrets file
+  include_tasks: create-rerc-secrets.yml
+  when:
+    - rerc|bool
+
+- name: create gke remote cluster resources
+  include_tasks: create-gke-rerc.yml
+  when:
+    - rerc|bool
+    - gke|bool
+
+- name: create openshift remote cluster resources
+  include_tasks: create-openshift-rerc.yml
+  when:
+    - rerc|bool
+    - not gke|bool

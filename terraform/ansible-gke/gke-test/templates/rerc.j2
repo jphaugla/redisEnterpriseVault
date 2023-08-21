@@ -1,0 +1,11 @@
+apiVersion: app.redislabs.com/v1alpha1
+kind: RedisEnterpriseRemoteCluster
+metadata:
+  name: rerc-{{rec_name}}
+spec:
+  recName: {{rec_name}}
+  recNamespace: demo
+  apiFqdnUrl: api-{{rec_name}}-demo.{{cluster_name}}.{{dns_domain}}
+  dbFqdnSuffix: -db-{{rec_name}}-demo.{{cluster_name}}.{{dns_domain}}
+  secretName: redis-enterprise-rerc-{{rec_name}}
+

@@ -3,7 +3,7 @@
 
 ---
 
-- name: Create GKE Cluster using Ansible GCP Library
+- name: Create Redis Cluster using Ansible GCP Library on Openshift or GKE
   hosts: localhost
   gather_facts: no
 

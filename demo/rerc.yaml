@@ -1,0 +1,11 @@
+apiVersion: app.redislabs.com/v1alpha1
+kind: RedisEnterpriseRemoteCluster
+metadata:
+  name: rerc-test-rec-1
+spec:
+  recName: test-rec-1
+  recNamespace: demo
+  apiFqdnUrl: api-test-rec-1-demo.openshift.demo.redislabs.com
+  dbFqdnSuffix: -db-test-rec-1-demo.openshift.demo.redislabs.com
+  secretName: redis-enterprise-rerc-test-rec-1
+

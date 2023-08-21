@@ -11,7 +11,9 @@
     content: "{{ haproxy_ip.stdout }}"
     dest: temp/ha_proxy_ip.txt
 
+- name: "delete dns record"
+  shell: "gcloud dns record-sets delete *.{{cluster_name}}.{{dns_domain}} --zone={{dns_name}} --type=A --project={{gcp_project}}"
+  ignore_errors: true
+
 - name: "create dns record"
   shell: "gcloud dns record-sets create *.{{cluster_name}}.{{dns_domain}} --zone={{dns_name}} --type=A --ttl=10 --rrdatas={{haproxy_ip.stdout}} --project={{gcp_project}}"
-  when:
-    - gke|bool

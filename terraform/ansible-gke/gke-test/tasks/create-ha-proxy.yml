@@ -18,12 +18,12 @@
 
 - name: use template to create rec patch for ha-proxy
   template:
-    src: gke-test/templates/rec.j2
-    dest: ../../demo/rec.yaml
+    src: gke-test/templates/rec-ha-proxy.j2
+    dest: ../../demo/rec-ha-proxy.yaml
     mode: '755'
 
 - name: apply rec patch
-  shell: "kubectl -n demo patch rec {{rec_name}} --type merge --patch-file ../../demo/rec.yaml"
+  shell: "kubectl -n demo patch rec {{rec_name}} --type merge --patch-file ../../demo/rec-ha-proxy.yaml"
 
 - name: Wait for haproxy
   shell: "kubectl -n demo rollout status deployment haproxy-ingress --timeout=100s"

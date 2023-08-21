@@ -4,7 +4,7 @@
 create_redis: true
 install_redis_gears: true
 redis_additions: true
-ha_dns: true
+dns: true
 create_redis_databases: true
 create_postgres: true
 create_postgres_database: true
@@ -26,3 +26,4 @@ create_rdi_namespace: true
 create_rdi: true
 rdi_create_deploy: true
 create_debezium: true
+rerc: true

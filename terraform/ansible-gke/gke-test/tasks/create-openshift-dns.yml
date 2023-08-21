@@ -1,0 +1,11 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+
+- name: "delete dns record"
+  shell: "gcloud dns record-sets delete api-{{rec_name}}-demo.{{dns_domain}} --zone={{dns_name}} --type=CNAME --project={{gcp_project}}"
+  ignore_errors: true
+
+- name: "create dns record"
+  shell: "gcloud dns record-sets create api-{{rec_name}}-demo.{{dns_domain}} --zone={{dns_name}} --type=CNAME --ttl=30 --rrdatas=router-default.apps.{{cluster_name}}.{{dns_domain}}. --project={{gcp_project}}"
