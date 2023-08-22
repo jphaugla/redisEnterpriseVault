@@ -2,6 +2,7 @@
 #   in the ../tasks directory, the main.yml file uses these values to control execution
 #   these variable should be used for doing selective re-run of the ansible jobs.  Otherwise, no need to change
 create_redis: true
+get_rec_secrets: true
 install_redis_gears: true
 redis_additions: true
 dns: true

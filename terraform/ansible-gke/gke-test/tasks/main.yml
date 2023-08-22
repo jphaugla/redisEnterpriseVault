@@ -28,7 +28,7 @@
 - name: get cluster secrets
   include_tasks: get-rec-secrets.yml
   when:
-    - create_redis|bool
+    - get_rec_secrets|bool
  
 #  this is needed for rdi 
 #  removed gears from database creation if rdi not needed
@@ -153,7 +153,7 @@
 - name: get database passwords
   include_tasks: get-db-secrets.yml
   when:
-    - get_database_secrets
+    - get_database_secrets|bool
 
 - name: start redis connect no-vault
   include_tasks: redis-connect-start-no-vault.yml
