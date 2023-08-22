@@ -28,3 +28,4 @@ create_rdi: true
 rdi_create_deploy: true
 create_debezium: true
 rerc: true
+cleanup: true

@@ -1,0 +1,42 @@
+# google.cloud.gcp_container_cluster docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_cluster_module.html
+# google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
+
+---
+- name: ensures temprun dir exists
+  file:
+    path: "temprun-{{rec_name}}"
+    state: directory
+
+- name: copy temp directory under temprun
+  copy: 
+    src: temp/
+    dest: "temprun-{{rec_name}}/demo/"
+
+- name: copy demo directory under temprun
+  copy: 
+    src: ../../demo/
+    dest: "temprun-{{rec_name}}/demo/"
+
+- name: copy postgres directory under temprun
+  copy: 
+    src: ../../postgres/
+    dest: "temprun-{{rec_name}}/postgres/"
+  ignore_errors: True
+
+- name: copy rdi directory under temprun
+  copy: 
+    src: ../../rdi/
+    dest: "temprun-{{rec_name}}/rdi/"
+  ignore_errors: True
+
+- name: copy redis-connect directory under temprun
+  copy: 
+    src: ../../redis-connect/
+    dest: "temprun-{{rec_name}}/redis-connect/"
+  ignore_errors: True
+
+- name: copy vault directory under temprun
+  copy: 
+    src: ../../vault/
+    dest: "temprun-{{rec_name}}/vault/"
+  ignore_errors: True

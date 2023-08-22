@@ -231,3 +231,8 @@
   when:
     - rerc|bool
     - not gke|bool
+
+- name: create openshift remote cluster resources
+  include_tasks: cleanup.yml
+  when:
+    - cleanup|bool

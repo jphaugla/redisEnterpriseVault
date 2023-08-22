@@ -3,8 +3,8 @@
 
 ---
 
-- name: use template to create rerc secrets file 
+- name: use template to create rerc definition file 
   template:
     src: gke-test/templates/rerc-openshift.j2
-    dest: ../../demo/rerc.yaml
+    dest: "../../demo/rerc-{{rec_name}}.yaml"
     mode: '755'

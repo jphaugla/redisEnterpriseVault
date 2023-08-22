@@ -45,8 +45,8 @@ Optional path is included to deploy without Vault.
 &nbsp;
 
 ## Overview
-Set up full set of tools to do redis connect between postgresql and redis enterprise using GKE cluster and vault.  All software pieces 
-will run in separate namespaces in a GKE or Openshift cluster 
+Set up full set of tools to do redis connect or RDI between postgresql and redis enterprise using GKE cluster or Openshift cluster and vault.  All software pieces 
+will run in separate namespaces in a GKE or Openshift cluster.   This github also supports setting up an active/active k8s cluster. 
 ![Solution Diagram](images/redis_connect_k8s_postgres.png)
 
 ## Important Links
@@ -66,15 +66,19 @@ will run in separate namespaces in a GKE or Openshift cluster
 * [Using Jinja2 Template in Ansible](https://www.linuxtechi.com/configure-use-ansible-jinja2-templates/)
 * [Installing OpenShift on GCP](https://docs.openshift.com/container-platform/4.11/installing/installing_gcp/installing-gcp-customizations.html)
 * [Deploy Redis Enterprise with OpenShift CLI](https://docs.redis.com/latest/kubernetes/deployment/openshift/openshift-cli/)
+* [Redis Enterprise k8s Clusters-REC](https://docs.redis.com/latest/kubernetes/re-clusters/)
+* [Redis Enterprise k8s databases-REDB](https://docs.redis.com/latest/kubernetes/re-databases/)
+* [Redis Enterprise k8s active-active](https://docs.redis.com/latest/kubernetes/active-active/)
 
 ## Technical Overview
 
 * Can use terraform/ansible automation to do complete automated install and configuration of this environment
-* Or, follow the instructions using link above to "Set up vault on GKE" or "Installing OpenShift on GCP"
+* Or, follow the instructions using link above to "Set up vault on GKE" or "Installing OpenShift on GCP".  
+  * At this point, these manual steps are stale as emphasis has been on the automated steps.
 * Install Redis Enterprise on k8s using "Redis Enterprise k8s" link
 * Set up Postgresql using Kubegres
 * If using Vault, Setup Vault and "Hashicorp Vault plugin on Redis Enterprise k8s"
-* Work through Redis Connect using "With" or "Without" vault
+* Work through Redis Connect or RDI using "With" or "Without" vault.  Note:  Have not tried RDI with vault
 
 &nbsp;
 
@@ -87,7 +91,7 @@ Choose to do GKE or do OpenShift as kickoff script is completely different
 ***IMPORTANT NOTE**: Creating this demo application in your GCP account will create and consume GCP resources, which **will cost money**.
 
 ### GKE Automated Instructions
-This terraform ansible setup has been tested on an AMD64 mac.  It needs some additional pip installs
+This terraform ansible setup has been tested on an AMD64 and ARM64 mac.  It needs some additional pip installs
 
 **NOTE** you must have posgtresql binaries installed before `pip3 install psycopg2`
 
@@ -98,7 +102,8 @@ pip3 install google-auth
 pip3 install kubernetes
 pip3 install psycopg2
 ```
-* Troubleshooting on the psycopg2 install.  
+* Troubleshooting on the psycopg2 install.  *this was not needed on arm64* , arm64 needed postresql 14 installed to prevent
+error on pip3 install psycopg2. Used *brew install postgresql@14* on arm64.  
   * Use [this psycopg2 install debug](https://stackoverflow.com/questions/27264574/import-psycopg2-library-not-loaded-libssl-1-0-0-dylib)   
   * The suggestion that worked for me was this
 ```bash
@@ -136,12 +141,15 @@ terraform init
 terraform apply --auto-approve
 ```
 #### GKE console access
-GKE console access is availble through the GCP console kubernetes link.  The cluster name comes from the cluster_name_final terraform variable which is held in [](test/main.tf)
+GKE console access is available through the GCP console kubernetes link.  The cluster name comes from the cluster_name_final terraform variable which is held in [](test/main.tf)
 
 #### Terraform destroy
 * to remove everything
+  * can have issues with the deletion of GKE.  Run delete script first.
 ```bash
-cd terraform/test
+cd demo
+./destroy.sh
+cd ../terraform/test
 terraform destroy --auto-approve
 ```
 
@@ -193,7 +201,8 @@ cd ansible-openshift
 ./manual.sh
 ```
 When the above script finishes it will output an *export KUBECONFIG* command.  Use this command to allow the *oc* and/or *kubectl* commands to work.  These binaries (oc and kubectl) are in the ./ansible-openshift/binaries directory
-* Opeshift console access is available using * https://console-openshift-console.apps.<ocp-cluster_name>.<openshift_cluster_base_domain>*
+* Can find all of these values in *ansible-openshift/install-files/.openshift_install.log*.   Can find the full openshift console address, password for kubeadmin, and KUBECONFIG environment variable.
+* Openshift console access is available using *https://console-openshift-console.apps.<ocp-cluster_name>.<openshift_cluster_base_domain>*
   * find these values in the [vars main yaml file](ansible-openshift/gcp/vars/main.yml)
 * Username is kubeadmin and the password is in the file [](ansible-openshift/install-files/auth/kubeadmin-password)
 #### Run ansible k8s
@@ -229,13 +238,54 @@ export KUBECONFIG=./ansible-openshift/install-files/auth/kubeconfig
 cd  terraform/ansible-gke
 ./manual_run_openshift.sh
 ```
+At the end of the ansible execution, the current files are copied over to *./terraform/ansible-gke/temprun-<rec_name>*
+
 #### Destroy openshift environment
 ```bash
 cd ./ansible-openshift
 ./binaries/openshift-install destroy cluster --dir install-files
 ```
 
+### Active-Active
+Many of the pieces are in place for active/active in this github.  The steps are taken from this [redis k8s active/active link](https://docs.redis.com/latest/kubernetes/active-active/)
+* the [prepare clusters steps are completed](https://docs.redis.com/latest/kubernetes/active-active/prepare-clusters/)
+  * Admission controller is configured
+  * If openshift, route is created.  If GKE, haproxy is created
+  * Necessary DNS entry is created in Cloud DNS to access the cluster from the route or haproxy
+  * The new secret for the cluster is created as *redis-enterprise-rerc-test-rec-1* where *test-rec-1* is the redis enterprise rec name
+    * *./terrafrom/ansible-gke/temprun-<rec_name>/demo/rerc-secrets-<rec_name>.yaml* contains the secret contents.  This has been applied to the current cluster but will be needed for the other cluster(s) 
+  * The rerc record yaml is also created for this cluster but has not been applied because the rerc files only need to be applied to one of the participating clusters
+    * *./terrafrom/ansible-gke/temprun-<rec_name>/demo/rerc-<rec_name>.yaml* contains the rerc definition
+  * To switch between environments using openshift is just setting the KUBECONFIG environment variable
+    * (first cluster) export KUBECONFIG=/Users/jason.haugland/gits/redisEnterpriseVault/ansible-openshift/install-files/auth/kubeconfig
+    * (second cluster) export KUBECONFIG=/Users/jason.haugland/gits/redisEnterpriseVault/ansible-openshift/install-files-2/auth/kubeconfig
+  * Verify can connect to both clusters
+    * edit demo/testroute one cluster
+    * test that cluster
+```bash
+cd demo
+./testroute.sh
+```
+    * repeat for second cluster
+#### Set environment to first cluster
+```bash
+export KUBECONFIG=/Users/jason.haugland/gits/redisEnterpriseVault/ansible-openshift/install-files/auth/kubeconfig
+```
+#### Create remote cluster secret
+```bash
+kubectl -n demo apply -f temprun-test-rec-2/demo/test-rec-2-rerc-secrets.yaml
+```
+#### Create remote clusters
+```bash
+cd terraform/ansible-gke/
+kubectl -n demo create -f temprun-test-rec-1/demo/rerc-test-rec-1.yaml
+kubectl -n demo create -f temprun-test-rec-2/demo/rerc-test-rec-2.yaml
+# verify rerc is good
+kubectl -n demo get rerc
+```
+Output should match ![](images/get_rerc_valid.png)
 ### Run manually
+These manual steps have not been actively maintained and are stale at this point.
 
 &nbsp;
 
@@ -245,7 +295,7 @@ Additionally, label each terminal session for the directory path in use.
 
 ### Prepare repository working directories
 To get all of these moving parts working, multiple repositories are needed.  Then, a large number of directory changes are needed as different pieces are deployed.  
-To facilitate this, first set up the environment with a provided scripts and then pull all the necessary repositories.  Decide on one home git directory that will hold all the subdirectories needed.  The default in the environment scirpt is ```$HOME/gits```
+To facilitate this, first set up the environment with a provided scripts and then pull all the necessary repositories.  Decide on one home git directory that will hold all the subdirectories needed.  The default in the environment script is ```$HOME/gits```
 * Move to chosen git directory home and pull down the repositories
 ```bash
 git clone https://github.com/jphaugla/redisEnterpriseVault.git

@@ -1,0 +1,10 @@
+apiVersion: app.redislabs.com/v1alpha1
+kind: RedisEnterpriseActiveActiveDatabase
+metadata:
+  name: aadb-demo
+spec:
+  participatingClusters:
+    - name: rerc-test-rec-1
+    - name: rerc-test-rec-2
+  globalConfigurations:
+    shardCount: 1
