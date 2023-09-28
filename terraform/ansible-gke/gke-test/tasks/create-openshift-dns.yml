@@ -3,9 +3,16 @@
 
 ---
 
-- name: "delete dns record"
+- name: "delete api dns record"
   shell: "gcloud dns record-sets delete api-{{rec_name}}-demo.{{dns_domain}} --zone={{dns_name}} --type=CNAME --project={{gcp_project}}"
   ignore_errors: true
 
-- name: "create dns record"
+- name: "create api dns record"
   shell: "gcloud dns record-sets create api-{{rec_name}}-demo.{{dns_domain}} --zone={{dns_name}} --type=CNAME --ttl=30 --rrdatas=router-default.apps.{{cluster_name}}.{{dns_domain}}. --project={{gcp_project}}"
+
+- name: "delete aadb dns record"
+  shell: "gcloud dns record-sets delete aadb-{{rec_name}}-demo.{{dns_domain}} --zone={{dns_name}} --type=CNAME --project={{gcp_project}}"
+  ignore_errors: true
+
+- name: "create aadb dns record"
+  shell: "gcloud dns record-sets create aadb-{{rec_name}}-demo.{{dns_domain}} --zone={{dns_name}} --type=CNAME --ttl=30 --rrdatas=router-default.apps.{{cluster_name}}.{{dns_domain}}. --project={{gcp_project}}"

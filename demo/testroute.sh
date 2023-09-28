@@ -7,8 +7,7 @@ export REDB=aadb-demo
 export RE_USERNAME=demo@redis.com
 #  DON'T FORGET TO CHANGE PASSWORD!!!
 #   this old password surely won't work
-# export RE_PASSWORD=XIx6BY3q
-export RE_PASSRORD=XIx6BY3q
+export RE_PASSWORD=XIx6BY3q
 nslookup api-${REC}-${NS}.${WILDCARD_DOMAIN}
 curl -X GET -u $RE_USERNAME:$RE_PASSWORD -k https://api-${REC}-${NS}.${WILDCARD_DOMAIN}/v1/cluster/certificates | jq -r .proxy_cert > proxy_cert-${REC}.pem
 curl -X GET -u $RE_USERNAME:$RE_PASSWORD -k https://api-${REC}-${NS}.${WILDCARD_DOMAIN}/v1/cluster

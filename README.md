@@ -210,11 +210,12 @@ Run ansible k8s steps to configure postgres, redis enterprise, etc
 * Verify the parameters in [main parameter file](terraform/ansible-gke/gke-test/vars/main.yml).  These should only need to be changed on rerun/error conditions
 * Check the [ansible script environment variables](terraform/ansible-gke/manual_run_openshift.sh)
 * it is very important to know the desired redis-enterprise version to have the correct module versions as RDI needs redis gears and redis connect needs timeseries
-* This openshift install doesn't really allow the choice of the redis operator and redis database versions.  Install relies on cloning the redis-enterprise k8s repository and using the version in this repository.  If you want an older version, need to clone that earlier version. 
+* This openshift install doesn't really allow the choice of the redis operator and redis database versions.  Install relies on cloning the redis-enterprise k8s repository and using the version in this repository.  If you want an older version, need to set your branch that earlier version. 
   * NOTE:  redis operator install steps changed after 6.2.18-41.  This ansible script will no longer work with 6.2.18-41 and earlier versions.
   * to clone use *git clone https://github.com/RedisLabs/redis-enterprise-k8s-docs.git*
+  * Set the branch to the Redis operator version you want, e.g., `6.4.2-8` or `7.2.4-2`, etc. Choosing the `master` branch will give you the latest.
   * update the redis operator version in [manual_run_openshift](terraform/ansible-gke/manual_run_openshift.sh)
-* To see the redis operator version in the github, check this file *openshift.bundle.yaml* and search for this string in the file *redis-enterprise-operator:*
+* To see the redis operator version in the github, check this file *openshift.bundle.yaml* and search for this string in the file */redis-enterprise-operator:*
 * check the redis enterprise database version and ensure modules have the correct versions
   *Click on the button [releases](https://github.com/RedisLabs/redis-enterprise-k8s-docs/releases)
   * enter the release with the tag (it starts with a v)
@@ -253,9 +254,9 @@ Many of the pieces are in place for active/active in this github.  The steps are
   * If openshift, route is created.  If GKE, haproxy is created
   * Necessary DNS entry is created in Cloud DNS to access the cluster from the route or haproxy
   * The new secret for the cluster is created as *redis-enterprise-rerc-test-rec-1* where *test-rec-1* is the redis enterprise rec name
-    * *./terrafrom/ansible-gke/temprun-<rec_name>/demo/rerc-secrets-<rec_name>.yaml* contains the secret contents.  This has been applied to the current cluster but will be needed for the other cluster(s) 
+    * *./terraform/ansible-gke/temprun-<rec_name>/demo/rerc-secrets-<rec_name>.yaml* contains the secret contents.  This has been applied to the current cluster but will be needed for the other cluster(s) 
   * The rerc record yaml is also created for this cluster but has not been applied because the rerc files only need to be applied to one of the participating clusters
-    * *./terrafrom/ansible-gke/temprun-<rec_name>/demo/rerc-<rec_name>.yaml* contains the rerc definition
+    * *./terraform/ansible-gke/temprun-<rec_name>/demo/rerc-<rec_name>.yaml* contains the rerc definition
   * To switch between environments using openshift is just setting the KUBECONFIG environment variable
     * (first cluster) export KUBECONFIG=/Users/jason.haugland/gits/redisEnterpriseVault/ansible-openshift/install-files/auth/kubeconfig
     * (second cluster) export KUBECONFIG=/Users/jason.haugland/gits/redisEnterpriseVault/ansible-openshift/install-files-2/auth/kubeconfig
@@ -266,7 +267,8 @@ Many of the pieces are in place for active/active in this github.  The steps are
 cd demo
 ./testroute.sh
 ```
-    * repeat for second cluster
+* repeat for second cluster
+
 #### Set environment to first cluster
 ```bash
 export KUBECONFIG=/Users/jason.haugland/gits/redisEnterpriseVault/ansible-openshift/install-files/auth/kubeconfig
@@ -284,6 +286,17 @@ kubectl -n demo create -f temprun-test-rec-2/demo/rerc-test-rec-2.yaml
 kubectl -n demo get rerc
 ```
 Output should match ![](images/get_rerc_valid.png)
+
+#### Create AA DB
+```bash
+kubectl -n demo create -f temprun-test-rec-1/demo/reaadb.yaml
+```
+
+The route should be created, but I think a CNAME for the route needs to be created as well.
+
+
+
+
 ### Run manually
 These manual steps have not been actively maintained and are stale at this point.
 

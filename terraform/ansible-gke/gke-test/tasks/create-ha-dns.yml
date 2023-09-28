@@ -2,11 +2,11 @@
 # google.cloud.gcp_container_node_pool docs: https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_container_node_pool_module.html
 
 ---
-- name: get haproxy ip address
+- name: "get haproxy ip address"
   shell: "kubectl -n demo get svc haproxy-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}'"
   register: haproxy_ip
 
-- name: save ha_proxy_ip
+- name: "save ha_proxy_ip"
   copy:
     content: "{{ haproxy_ip.stdout }}"
     dest: temp/ha_proxy_ip.txt

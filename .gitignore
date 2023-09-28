@@ -5,6 +5,9 @@
 # Holds temp generate ansible values
 terraform/ansible-gke/temp/
 terraform/ansible-gke/gkeconfig
+terraform/ansible-gke/gke_gcloud_auth_plugin_cache
+terraform/ansible-gke/temprun-test-rec-1/
+terraform/ansible-gke/temprun-test-rec-2/
 
 # .tfstate files
 *.tfstate
